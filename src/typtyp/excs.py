@@ -1,0 +1,2 @@
+class UnreferrableTypeError(ValueError):
+    pass

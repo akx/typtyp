@@ -1,0 +1,53 @@
+[project]
+name = "typtyp"
+version = "0.1.0"
+license = "MIT"
+description = "Convert Python types to TypeScript"
+readme = "README.md"
+authors = [
+    { name = "Aarni Koskela", email = "akx@iki.fi" }
+]
+requires-python = ">=3.11"
+
+[project.optional-dependencies]
+#django = ["django"]
+pydantic = ["pydantic>=2.0"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.15.0",
+    "pyright>=1.1.397",
+    "pytest>=8.3.5",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.11.2",
+    "syrupy>=4.9.1",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+extend-select = [
+    "COM812",
+    "I",
+    "T201",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = [
+    "D",
+    "S101",
+    "UP",
+]
+
+[tool.coverage.report]
+exclude_also = [
+    'if 0:',
+    'if TYPE_CHECKING:',
+    'if __name__ == .__main__.:',
+    'raise AssertionError',
+]

@@ -1,0 +1,20 @@
+# serializer version: 1
+# name: test_pydantic
+  '''
+  interface Person {
+  head: Head
+  name: string
+  }
+  const enum HairColor {
+  RED = "red",
+  BLACK = "black",
+  PURPLE = "purple",
+  BLUE = "blue",
+  }
+  interface Head {
+  hair_color: HairColor | null
+  size: number
+  }
+  
+  '''
+# ---

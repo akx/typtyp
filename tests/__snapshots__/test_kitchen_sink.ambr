@@ -1,0 +1,112 @@
+# serializer version: 1
+# name: test_kitchen_sink
+  '''
+  interface KitchenSink {
+  string_field: string
+  int_field: number
+  float_field: number
+  bool_field: boolean
+  none_field: null
+  complex_field: [number, number] /* complex */
+  decimal_field: number
+  list_field: Array<unknown /* any */>
+  int_list: (number)[]
+  nested_list: Array<(string)[]>
+  tuple_field: [number, string, boolean]
+  homogeneous_tuple: [...number[]]
+  empty_tuple: []
+  set_field: (string)[] /* set */
+  frozen_set: (number)[] /* frozenset */
+  dict_field: Record<string, unknown /* any */>
+  int_to_str_dict: Record<number, string>
+  nested_dict: Record<string, Record<string, (number)[]>>
+  default_dict: Record<string, number> /* defaultdict */
+  ordered_dict: Record<string, unknown /* any */> /* OrderedDict */
+  counter_dict: Record<string, number>
+  optional_field: string | null
+  union_field: number | string | boolean
+  optional_complex: Record<string, Array<[number, string]>> | null
+  datetime_field: ISO8601
+  date_field: ISO8601Date
+  time_field: ISO8601Time
+  timedelta_field: number
+  some_callable: Function
+  simple_callback: (_0: number) => boolean
+  complex_callback: (_0: string, _1: number, _2: Record<string, unknown /* any */>) => Array<[number, string]> | null
+  iterator_field: (number)[] /* Iterator */
+  iterable_field: (string)[] /* Iterable */
+  sequence_field: (number)[] /* Sequence */
+  mapping_field: Record<string, unknown /* any */> /* Mapping */
+  mutable_mapping: Record<string, number> /* MutableMapping */
+  deque_field: (string)[] /* deque */
+  literal_field: "red" | "green" | "blue"
+  literal_int: 1 | 2 | 3 | 5 | 8
+  regex_pattern: string /* Pattern */
+  user_id: string /* CustomID */
+  generic_container: Array<unknown /* ~T */>
+  file_path: string /* Path */
+  binary_data: unknown /* bytes */
+  bytearray_data: unknown /* bytearray */
+  memoryview_data: unknown /* memoryview */
+  ipv4_address: string /* IPv4Address */
+  ipv6_address: string /* IPv6Address */
+  uuid_field: UUID
+  status: Status
+  permissions: UnixPermissions
+  favorite_number: FavoriteNumberEnum
+  address: Address
+  point: [unknown /* x */, unknown /* y */, unknown /* z */] /* Point */
+  config: NestedConfig
+  named_tuple1: [unknown /* name */, unknown /* age */, unknown /* email */] /* Person */
+  named_tuple2: [unknown /* name */, unknown /* age */, unknown /* email */] /* Person2 */
+  any_field: unknown /* any */
+  ellipsis_field: unknown /* ... */
+  py_counter: Record<string | number | symbol, number> /* Counter */
+  py_defaultdict: Record<string | number | symbol, unknown> /* defaultdict */
+  py_ordered_dict: Record<string | number | symbol, unknown> /* OrderedDict */
+  recursive_field: unknown /* KitchenSink */
+  }
+  /**
+   * Address(street: str, city: str, postal_code: str, country: str)
+   */
+  interface Address {
+  street: string
+  city: string
+  postal_code: string
+  country: string
+  }
+  const enum Status {
+  PENDING = "pending",
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  }
+  const enum UnixPermissions {
+  READ = 1,
+  WRITE = 2,
+  EXECUTE = 4,
+  }
+  const enum FavoriteNumberEnum {
+  ONE = 1,
+  TWO = 2,
+  THREE = 3,
+  }
+  /**
+   * Point(x, y, z)
+   */
+  type Point = [unknown /* x */, unknown /* y */, unknown /* z */] /* Point */
+  interface NestedConfig {
+  timeout: number
+  retry_count: number
+  debug_mode: boolean
+  }
+  /**
+   * Person2(name, age, email)
+   */
+  type Person2 = [unknown /* name */, unknown /* age */, unknown /* email */] /* Person2 */
+  type ISO8601 = string
+  type ISO8601Date = string
+  type ISO8601Time = string
+  type UUID = string
+  
+  '''
+# ---

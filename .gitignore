@@ -1,0 +1,11 @@
+*.egg-info
+*.py[oc]
+.coverage
+.venv
+__pycache__/
+build/
+dist/
+uv.lock
+wheels/
+node_modules/
+pnpm-lock.yaml
