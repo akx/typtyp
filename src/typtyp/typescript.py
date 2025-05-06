@@ -67,9 +67,9 @@ def map_plain_type_ref(field_type: type, ts_context: TypeScriptContext) -> str: 
     # Special types
 
     if isinstance(field_type, ForwardRef):
-        return f"unknown /* {field_type.__forward_arg__} */"
+        return f"unknown /* forward reference: {field_type.__forward_arg__} */"
     if type(field_type) is TypeVar:
-        return f"unknown /* {field_type} */"
+        return f"unknown /* type: {field_type} */"
     if type(field_type) is type(Ellipsis):
         return "unknown /* ... */"
     if field_type is Any:

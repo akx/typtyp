@@ -43,7 +43,7 @@
   literal_int: 1 | 2 | 3 | 5 | 8
   regex_pattern: string /* Pattern */
   user_id: string /* CustomID */
-  generic_container: Array<unknown /* ~T */>
+  generic_container: Array<unknown /* type: ~T */>
   file_path: string /* Path */
   binary_data: unknown /* bytes */
   bytearray_data: unknown /* bytearray */
