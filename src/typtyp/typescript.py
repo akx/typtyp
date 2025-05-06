@@ -43,9 +43,15 @@ class TypeAndKind(NamedTuple):
 
 
 @dataclasses.dataclass(frozen=True)
+class TypeScriptOptions:
+    exported_types: set[str] | bool = True
+
+
+@dataclasses.dataclass(frozen=True)
 class TypeScriptContext:
     fp: TextIO
     world: World
+    options: TypeScriptOptions
     null_is_undefined: bool = False
     required_utility_types: dict[str, type] = dataclasses.field(default_factory=dict)
 
@@ -54,6 +60,14 @@ class TypeScriptContext:
 
     def write(self, s: str) -> None:
         self.fp.write(s)
+
+    def get_export_modifier(self, type_info: TypeInfo) -> str:
+        exported = self.options.exported_types
+        if exported is False:
+            return ""
+        if exported is True or type_info.name in exported:
+            return "export "
+        return ""
 
 
 def map_plain_type_ref(field_type: type, ts_context: TypeScriptContext) -> str:  # noqa: C901, PLR0911, PLR0912
@@ -218,7 +232,7 @@ def get_struct_types(tp) -> list[tuple[str, Any]] | None:
 
 def write_structlike(ctx: TypeScriptContext, type_info: TypeInfo, name_and_type: Iterable[tuple[str, type]]) -> None:
     ctx = ctx.sub(null_is_undefined=type_info.null_is_undefined)
-    ctx.write(f"interface {type_info.name} {{\n")
+    ctx.write(f"{ctx.get_export_modifier(type_info)}interface {type_info.name} {{\n")
     for name, typ in name_and_type:
         ts_type = to_ts_type(typ, ts_context=ctx).strip()
         field_suffix = ""
@@ -230,7 +244,7 @@ def write_structlike(ctx: TypeScriptContext, type_info: TypeInfo, name_and_type:
 
 
 def write_enum(ctx: TypeScriptContext, type_info: TypeInfo) -> None:
-    ctx.write(f"const enum {type_info.name} {{\n")
+    ctx.write(f"{ctx.get_export_modifier(type_info)}const enum {type_info.name} {{\n")
     for name, value in type_info.type.__members__.items():  # type: ignore
         ctx.write(f"{name} = {json.dumps(value.value)},\n")
     ctx.write("}\n")
@@ -249,11 +263,13 @@ def write_type(ctx: TypeScriptContext, type_info: TypeInfo) -> None:
     if (nt := get_struct_types(type_info.type)) is not None:
         write_structlike(ctx, type_info, nt)
     else:
-        ctx.write(f"type {type_info.name} = {to_ts_type(type_info.type, ctx)}\n")
+        ctx.write(f"{ctx.get_export_modifier(type_info)}type {type_info.name} = {to_ts_type(type_info.type, ctx)}\n")
 
 
-def write_ts(fp: typing.TextIO, world: World) -> None:
-    ctx = TypeScriptContext(fp=fp, world=world)
+def write_ts(fp: typing.TextIO, world: World, *, options: TypeScriptOptions | None = None) -> None:
+    if options is None:
+        options = TypeScriptOptions()
+    ctx = TypeScriptContext(fp=fp, world=world, options=options)
     for type_info in ctx.world:
         write_type(ctx, type_info)
     for name, typ in sorted(ctx.required_utility_types.items()):

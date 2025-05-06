@@ -73,9 +73,9 @@ class World:
     def __iter__(self):
         return iter(self._types_by_name.values())
 
-    def get_typescript(self) -> str:
+    def get_typescript(self, **write_ts_kwargs) -> str:
         from typtyp.typescript import write_ts
 
         sio = io.StringIO()
-        write_ts(sio, self)
+        write_ts(sio, self, **write_ts_kwargs)
         return sio.getvalue()

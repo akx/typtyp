@@ -1,7 +1,7 @@
 # serializer version: 1
 # name: test_kitchen_sink
   '''
-  interface KitchenSink {
+  export interface KitchenSink {
   string_field: string
   int_field: number
   float_field: number
@@ -69,23 +69,23 @@
   /**
    * Address(street: str, city: str, postal_code: str, country: str)
    */
-  interface Address {
+  export interface Address {
   street: string
   city: string
   postal_code: string
   country: string
   }
-  const enum Status {
+  export const enum Status {
   PENDING = "pending",
   ACTIVE = "active",
   INACTIVE = "inactive",
   }
-  const enum UnixPermissions {
+  export const enum UnixPermissions {
   READ = 1,
   WRITE = 2,
   EXECUTE = 4,
   }
-  const enum FavoriteNumberEnum {
+  export const enum FavoriteNumberEnum {
   ONE = 1,
   TWO = 2,
   THREE = 3,
@@ -93,8 +93,8 @@
   /**
    * Point(x, y, z)
    */
-  type Point = [unknown /* x */, unknown /* y */, unknown /* z */] /* Point */
-  interface NestedConfig {
+  export type Point = [unknown /* x */, unknown /* y */, unknown /* z */] /* Point */
+  export interface NestedConfig {
   timeout: number
   retry_count: number
   debug_mode: boolean
@@ -102,11 +102,11 @@
   /**
    * Person2(name, age, email)
    */
-  type Person2 = [unknown /* name */, unknown /* age */, unknown /* email */] /* Person2 */
-  type ISO8601 = string
-  type ISO8601Date = string
-  type ISO8601Time = string
-  type UUID = string
+  export type Person2 = [unknown /* name */, unknown /* age */, unknown /* email */] /* Person2 */
+  export type ISO8601 = string
+  export type ISO8601Date = string
+  export type ISO8601Time = string
+  export type UUID = string
   
   '''
 # ---

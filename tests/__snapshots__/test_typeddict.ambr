@@ -1,21 +1,21 @@
 # serializer version: 1
 # name: test_typeddict
   '''
-  interface Person {
+  export interface Person {
   head: Head
   name: string
   }
-  const enum HairColor {
+  export const enum HairColor {
   RED = "red",
   BLACK = "black",
   PURPLE = "purple",
   BLUE = "blue",
   }
-  interface Head {
+  export interface Head {
   size: number
   hair_color: HairColor | null
   }
-  interface Feet {
+  export interface Feet {
   shoe_color?: "red" | "blue" 
   }
   
