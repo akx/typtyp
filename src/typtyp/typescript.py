@@ -18,6 +18,7 @@ import uuid
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, ForwardRef, NamedTuple, TextIO, TypeVar
 
+from typtyp.consts import COLLECTION_ORIGINS, MAPPING_ORIGINS
 from typtyp.excs import UnreferrableTypeError
 from typtyp.type_info import TypeInfo
 
@@ -162,16 +163,7 @@ def to_ts_type(field_type: type, ts_context: TypeScriptContext) -> str:  # noqa:
     if origin is typing.Literal:
         return " | ".join(json.dumps(arg) for arg in typing.get_args(field_type))
 
-    # TODO: Smells like this could be done better with the ABCs...
-    if origin in (
-        list,
-        collections.deque,
-        set,
-        frozenset,
-        collections.abc.Iterable,
-        collections.abc.Iterator,
-        collections.abc.Sequence,
-    ):
+    if origin in COLLECTION_ORIGINS:  # TODO: Smells like this could be done better with the ABCs...
         comment = f" /* {origin.__name__} */" if origin is not list else ""
         tps = typing.get_args(field_type)
         if len(tps) != 1:
@@ -187,13 +179,7 @@ def to_ts_type(field_type: type, ts_context: TypeScriptContext) -> str:  # noqa:
             raise AssertionError(f"Expected Counter with one type, got {tps}")
         return f"Record<{to_ts_type(tps[0], ts_context)}, number>"
 
-    if origin in (
-        dict,
-        collections.defaultdict,
-        collections.abc.Mapping,
-        collections.abc.MutableMapping,
-        collections.OrderedDict,
-    ):
+    if origin in MAPPING_ORIGINS:  # TODO: Smells like this could be done better with the ABCs...
         comment = f" /* {origin.__name__} */" if origin is not dict else ""
         tps = typing.get_args(field_type)
         if len(tps) != 2:
