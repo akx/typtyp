@@ -1,3 +1,5 @@
+from __future__ import annotations  # This tests that forward references are unnested
+
 from typing import Literal, Optional, TypedDict, Union
 
 import typtyp

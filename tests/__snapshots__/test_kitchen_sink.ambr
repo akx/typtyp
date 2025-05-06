@@ -64,7 +64,7 @@
   py_counter: Record<string | number | symbol, number> /* Counter */
   py_defaultdict: Record<string | number | symbol, unknown> /* defaultdict */
   py_ordered_dict: Record<string | number | symbol, unknown> /* OrderedDict */
-  recursive_field: unknown /* KitchenSink */
+  recursive_field: KitchenSink
   }
   /**
    * Address(street: str, city: str, postal_code: str, country: str)

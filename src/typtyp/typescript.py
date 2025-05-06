@@ -6,7 +6,6 @@ import dataclasses
 import datetime
 import decimal
 import enum
-import inspect
 import ipaddress
 import json
 import pathlib
@@ -206,7 +205,7 @@ def get_struct_types(tp) -> list[tuple[str, Any]] | None:
         # TODO: support __total__
         # TODO: support __required_keys__
         # TODO: support __optional_keys__
-        return list(inspect.get_annotations(tp).items())
+        return list(typing.get_type_hints(tp, include_extras=True).items())
 
     try:
         if is_pydantic_model(tp):
