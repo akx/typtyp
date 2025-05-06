@@ -6,7 +6,6 @@ import dataclasses
 import datetime
 import decimal
 import enum
-import inspect
 import ipaddress
 import json
 import pathlib
@@ -18,6 +17,7 @@ import uuid
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, ForwardRef, NamedTuple, TextIO, TypeVar
 
+from typtyp.consts import COLLECTION_ORIGINS, MAPPING_ORIGINS
 from typtyp.excs import UnreferrableTypeError
 from typtyp.type_info import TypeInfo
 
@@ -43,9 +43,15 @@ class TypeAndKind(NamedTuple):
 
 
 @dataclasses.dataclass(frozen=True)
+class TypeScriptOptions:
+    exported_types: set[str] | bool = True
+
+
+@dataclasses.dataclass(frozen=True)
 class TypeScriptContext:
     fp: TextIO
     world: World
+    options: TypeScriptOptions
     null_is_undefined: bool = False
     required_utility_types: dict[str, type] = dataclasses.field(default_factory=dict)
 
@@ -54,6 +60,14 @@ class TypeScriptContext:
 
     def write(self, s: str) -> None:
         self.fp.write(s)
+
+    def get_export_modifier(self, type_info: TypeInfo) -> str:
+        exported = self.options.exported_types
+        if exported is False:
+            return ""
+        if exported is True or type_info.name in exported:
+            return "export "
+        return ""
 
 
 def map_plain_type_ref(field_type: type, ts_context: TypeScriptContext) -> str:  # noqa: C901, PLR0911, PLR0912
@@ -66,9 +80,9 @@ def map_plain_type_ref(field_type: type, ts_context: TypeScriptContext) -> str: 
     # Special types
 
     if isinstance(field_type, ForwardRef):
-        return f"unknown /* {field_type.__forward_arg__} */"
+        return f"unknown /* forward reference: {field_type.__forward_arg__} */"
     if type(field_type) is TypeVar:
-        return f"unknown /* {field_type} */"
+        return f"unknown /* type: {field_type} */"
     if type(field_type) is type(Ellipsis):
         return "unknown /* ... */"
     if field_type is Any:
@@ -162,16 +176,7 @@ def to_ts_type(field_type: type, ts_context: TypeScriptContext) -> str:  # noqa:
     if origin is typing.Literal:
         return " | ".join(json.dumps(arg) for arg in typing.get_args(field_type))
 
-    # TODO: Smells like this could be done better with the ABCs...
-    if origin in (
-        list,
-        collections.deque,
-        set,
-        frozenset,
-        collections.abc.Iterable,
-        collections.abc.Iterator,
-        collections.abc.Sequence,
-    ):
+    if origin in COLLECTION_ORIGINS:  # TODO: Smells like this could be done better with the ABCs...
         comment = f" /* {origin.__name__} */" if origin is not list else ""
         tps = typing.get_args(field_type)
         if len(tps) != 1:
@@ -187,13 +192,7 @@ def to_ts_type(field_type: type, ts_context: TypeScriptContext) -> str:  # noqa:
             raise AssertionError(f"Expected Counter with one type, got {tps}")
         return f"Record<{to_ts_type(tps[0], ts_context)}, number>"
 
-    if origin in (
-        dict,
-        collections.defaultdict,
-        collections.abc.Mapping,
-        collections.abc.MutableMapping,
-        collections.OrderedDict,
-    ):
+    if origin in MAPPING_ORIGINS:  # TODO: Smells like this could be done better with the ABCs...
         comment = f" /* {origin.__name__} */" if origin is not dict else ""
         tps = typing.get_args(field_type)
         if len(tps) != 2:
@@ -220,7 +219,7 @@ def get_struct_types(tp) -> list[tuple[str, Any]] | None:
         # TODO: support __total__
         # TODO: support __required_keys__
         # TODO: support __optional_keys__
-        return list(inspect.get_annotations(tp).items())
+        return list(typing.get_type_hints(tp, include_extras=True).items())
 
     try:
         if is_pydantic_model(tp):
@@ -233,7 +232,7 @@ def get_struct_types(tp) -> list[tuple[str, Any]] | None:
 
 def write_structlike(ctx: TypeScriptContext, type_info: TypeInfo, name_and_type: Iterable[tuple[str, type]]) -> None:
     ctx = ctx.sub(null_is_undefined=type_info.null_is_undefined)
-    ctx.write(f"interface {type_info.name} {{\n")
+    ctx.write(f"{ctx.get_export_modifier(type_info)}interface {type_info.name} {{\n")
     for name, typ in name_and_type:
         ts_type = to_ts_type(typ, ts_context=ctx).strip()
         field_suffix = ""
@@ -245,7 +244,7 @@ def write_structlike(ctx: TypeScriptContext, type_info: TypeInfo, name_and_type:
 
 
 def write_enum(ctx: TypeScriptContext, type_info: TypeInfo) -> None:
-    ctx.write(f"const enum {type_info.name} {{\n")
+    ctx.write(f"{ctx.get_export_modifier(type_info)}const enum {type_info.name} {{\n")
     for name, value in type_info.type.__members__.items():  # type: ignore
         ctx.write(f"{name} = {json.dumps(value.value)},\n")
     ctx.write("}\n")
@@ -264,11 +263,13 @@ def write_type(ctx: TypeScriptContext, type_info: TypeInfo) -> None:
     if (nt := get_struct_types(type_info.type)) is not None:
         write_structlike(ctx, type_info, nt)
     else:
-        ctx.write(f"type {type_info.name} = {to_ts_type(type_info.type, ctx)}\n")
+        ctx.write(f"{ctx.get_export_modifier(type_info)}type {type_info.name} = {to_ts_type(type_info.type, ctx)}\n")
 
 
-def write_ts(fp: typing.TextIO, world: World) -> None:
-    ctx = TypeScriptContext(fp=fp, world=world)
+def write_ts(fp: typing.TextIO, world: World, *, options: TypeScriptOptions | None = None) -> None:
+    if options is None:
+        options = TypeScriptOptions()
+    ctx = TypeScriptContext(fp=fp, world=world, options=options)
     for type_info in ctx.world:
         write_type(ctx, type_info)
     for name, typ in sorted(ctx.required_utility_types.items()):

@@ -1,0 +1,12 @@
+# serializer version: 1
+# name: test_selective_export
+  '''
+  export interface Foo {
+  size: number
+  }
+  interface Bar {
+  girth: number
+  }
+  
+  '''
+# ---

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+from inspect import cleandoc
 from typing import Iterable
 
 from typtyp.type_info import TypeInfo
@@ -11,6 +12,13 @@ class _Sentinel:
 
 
 NOT_SET = _Sentinel()
+
+
+def get_doc(typ: type) -> str | None:
+    if typ.__module__ == "builtins":
+        # Should not use a builtin's docstring.
+        return None
+    return cleandoc(getattr(typ, "__doc__", None) or "")
 
 
 class World:
@@ -31,7 +39,7 @@ class World:
             name = typ.__name__
         if isinstance(doc, _Sentinel):
             # You're not a real doc...
-            real_doc = getattr(typ, "__doc__", None)
+            real_doc = get_doc(typ)
         else:
             real_doc = doc
         assert name  # noqa: S101
@@ -65,9 +73,9 @@ class World:
     def __iter__(self):
         return iter(self._types_by_name.values())
 
-    def get_typescript(self) -> str:
+    def get_typescript(self, **write_ts_kwargs) -> str:
         from typtyp.typescript import write_ts
 
         sio = io.StringIO()
-        write_ts(sio, self)
+        write_ts(sio, self, **write_ts_kwargs)
         return sio.getvalue()

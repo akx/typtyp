@@ -1,7 +1,7 @@
 # serializer version: 1
 # name: test_kitchen_sink
   '''
-  interface KitchenSink {
+  export interface KitchenSink {
   string_field: string
   int_field: number
   float_field: number
@@ -43,7 +43,7 @@
   literal_int: 1 | 2 | 3 | 5 | 8
   regex_pattern: string /* Pattern */
   user_id: string /* CustomID */
-  generic_container: Array<unknown /* ~T */>
+  generic_container: Array<unknown /* type: ~T */>
   file_path: string /* Path */
   binary_data: unknown /* bytes */
   bytearray_data: unknown /* bytearray */
@@ -64,28 +64,28 @@
   py_counter: Record<string | number | symbol, number> /* Counter */
   py_defaultdict: Record<string | number | symbol, unknown> /* defaultdict */
   py_ordered_dict: Record<string | number | symbol, unknown> /* OrderedDict */
-  recursive_field: unknown /* KitchenSink */
+  recursive_field: KitchenSink
   }
   /**
    * Address(street: str, city: str, postal_code: str, country: str)
    */
-  interface Address {
+  export interface Address {
   street: string
   city: string
   postal_code: string
   country: string
   }
-  const enum Status {
+  export const enum Status {
   PENDING = "pending",
   ACTIVE = "active",
   INACTIVE = "inactive",
   }
-  const enum UnixPermissions {
+  export const enum UnixPermissions {
   READ = 1,
   WRITE = 2,
   EXECUTE = 4,
   }
-  const enum FavoriteNumberEnum {
+  export const enum FavoriteNumberEnum {
   ONE = 1,
   TWO = 2,
   THREE = 3,
@@ -93,8 +93,8 @@
   /**
    * Point(x, y, z)
    */
-  type Point = [unknown /* x */, unknown /* y */, unknown /* z */] /* Point */
-  interface NestedConfig {
+  export type Point = [unknown /* x */, unknown /* y */, unknown /* z */] /* Point */
+  export interface NestedConfig {
   timeout: number
   retry_count: number
   debug_mode: boolean
@@ -102,11 +102,11 @@
   /**
    * Person2(name, age, email)
    */
-  type Person2 = [unknown /* name */, unknown /* age */, unknown /* email */] /* Person2 */
-  type ISO8601 = string
-  type ISO8601Date = string
-  type ISO8601Time = string
-  type UUID = string
+  export type Person2 = [unknown /* name */, unknown /* age */, unknown /* email */] /* Person2 */
+  export type ISO8601 = string
+  export type ISO8601Date = string
+  export type ISO8601Time = string
+  export type UUID = string
   
   '''
 # ---

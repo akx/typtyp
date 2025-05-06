@@ -1,15 +1,15 @@
 # serializer version: 1
 # name: test_dataclass
   '''
-  interface Person {
+  export interface Person {
   head: Head
   name: string
   }
-  interface Head {
+  export interface Head {
   size: number
   hair_color: HairColor | null
   }
-  const enum HairColor {
+  export const enum HairColor {
   RED = "red",
   BLACK = "black",
   PURPLE = "purple",
