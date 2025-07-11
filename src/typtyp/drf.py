@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 import uuid
 from decimal import Decimal
-from typing import Annotated, Any, Iterable
+from typing import Annotated, Any, Iterable, Literal, Union
 
 from rest_framework import fields, relations, serializers
 
@@ -20,7 +20,6 @@ STRINGLIKE_FIELDS = (
 
 SIMPLE_FIELD_TYPES = {
     fields.BooleanField: bool,
-    fields.ChoiceField: str,  # This could be wrong, technically ChoiceField can be any type
     fields.DateField: datetime.date,
     fields.DateTimeField: datetime.datetime,
     fields.DecimalField: Decimal,
@@ -69,6 +68,8 @@ def get_drf_field_type(field: fields.Field) -> type:
         return field.__class__
     if isinstance(field, serializers.ListSerializer):
         return list[get_drf_field_type(field.child)]
+    if isinstance(field, fields.ChoiceField):
+        return Union[*(Literal[choice] for choice in field.choices)]
     if isinstance(field, STRINGLIKE_FIELDS):
         return str
     for field_type, typ in SIMPLE_FIELD_TYPES.items():

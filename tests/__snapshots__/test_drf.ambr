@@ -38,7 +38,7 @@
   /** What this chaos costs */
   daily_rate: number
   days_until_start: unknown /* method rtype unknown */
-  difficulty_level: string
+  difficulty_level: "easy" | "moderate" | "hard" | "expert" | "impossible"
   difficulty_level_display: string
   /** When things go sideways */
   emergency_contact_info: string
@@ -76,7 +76,7 @@
   owner_has_security_cameras: boolean
   /** Novel-length instructions from neurotic pet parents */
   owner_notes: string
-  payment_status: string
+  payment_status: "pending" | "partial" | "paid" | "overdue"
   payment_status_display: string
   /** Because of course they have one */
   pet_instagram: string
@@ -89,7 +89,7 @@
   /** Mugshot for identification */
   pet_photo: string /* file field */
   pet_photo_base64: string
-  pet_species: string
+  pet_species: "dog" | "cat" | "bird" | "fish" | "hamster" | "snake" | "turtle" | "other"
   pet_species_display: string
   /** In pounds (for dosing purposes) */
   pet_weight: number
