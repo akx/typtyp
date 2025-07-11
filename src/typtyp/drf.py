@@ -3,9 +3,11 @@ from __future__ import annotations
 import datetime
 import uuid
 from decimal import Decimal
-from typing import Any, Iterable
+from typing import Annotated, Any, Iterable
 
 from rest_framework import fields, relations, serializers
+
+from typtyp.annotations import Comment
 
 STRINGLIKE_FIELDS = (
     fields.CharField,
@@ -22,17 +24,26 @@ SIMPLE_FIELD_TYPES = {
     fields.DateTimeField: datetime.datetime,
     fields.DecimalField: Decimal,
     fields.DurationField: str,
-    fields.FileField: str,  # TODO: Handle more specific types?
+    fields.FileField: Annotated[str, Comment("file field")],  # TODO: Handle more specific types?
     fields.FloatField: float,
-    fields.ImageField: str,  # TODO: Handle more specific types?
+    fields.ImageField: Annotated[str, Comment("image field")],  # TODO: Handle more specific types?
     fields.IntegerField: int,
     fields.JSONField: Any,
-    fields.ReadOnlyField: Any,  # TODO: can we dig these?
     fields.TimeField: datetime.time,
+    fields.ReadOnlyField: Annotated[  # TODO: can we dig into these?
+        Any,
+        Comment(comment="read only field, type unknown"),
+    ],
     fields.UUIDField: uuid.UUID,
     relations.HyperlinkedRelatedField: str,
-    relations.PrimaryKeyRelatedField: Any,  # TODO: Handle more specific types?
-    serializers.SerializerMethodField: Any,  # TODO: should look up the return type of the method
+    relations.PrimaryKeyRelatedField: Annotated[  # TODO: Handle more specific types?
+        Any,
+        Comment(comment="primary key related field"),
+    ],
+    serializers.SerializerMethodField: Annotated[  # TODO: should look up the return type of the method
+        Any,
+        Comment(comment="method rtype unknown"),
+    ],
 }
 
 

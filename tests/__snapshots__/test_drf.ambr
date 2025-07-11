@@ -7,7 +7,7 @@
   export interface UserSerializer {
   email: string
   first_name: string
-  full_name: unknown /* any */
+  full_name: unknown /* method rtype unknown */
   id: number
   last_name: string
   username: string
@@ -36,24 +36,24 @@
    * Main serializer for pet sitting gigs with all the bells and whistles
    */
   export interface PetSittingGigSerializer {
-  backup_sitter: unknown /* any */
+  backup_sitter: unknown /* primary key related field */
   created_at: ISO8601
   daily_rate: number
-  days_until_start: unknown /* any */
+  days_until_start: unknown /* method rtype unknown */
   difficulty_level: string
   difficulty_level_display: string
   emergency_contact_info: string
   emergency_contacts: (PetEmergencyContactSerializer)[]
   end_date: ISO8601Date
   gig_number: number
-  gig_status: unknown /* any */
+  gig_status: unknown /* method rtype unknown */
   house_alarm_code: number
-  house_key_photo: string
+  house_key_photo: string /* file field */
   house_key_photo_base64: string
   house_wifi_password: string
-  house_wifi_password_encrypted: unknown /* any */
+  house_wifi_password_encrypted: unknown /* method rtype unknown */
   id: UUID
-  is_current_gig: unknown /* any */
+  is_current_gig: unknown /* method rtype unknown */
   is_escape_artist: boolean
   is_house_trained: boolean
   last_fed: ISO8601
@@ -70,7 +70,7 @@
   pet_is_social_media_famous: boolean
   pet_name: string
   pet_nickname: string
-  pet_photo: string
+  pet_photo: string /* file field */
   pet_photo_base64: string
   pet_species: string
   pet_species_display: string
@@ -82,11 +82,11 @@
   special_instructions: unknown /* any */
   start_date: ISO8601Date
   start_time: ISO8601Time
-  total_cost: unknown /* any */
-  total_days: unknown /* any */
+  total_cost: unknown /* read only field, type unknown */
+  total_days: unknown /* read only field, type unknown */
   typical_walk_duration: string
   updated_at: ISO8601
-  vaccination_records: string
+  vaccination_records: string /* file field */
   vaccination_records_base64: string
   vet_website: string
   }
