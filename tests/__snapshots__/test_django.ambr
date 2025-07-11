@@ -1,0 +1,191 @@
+# serializer version: 1
+# name: test_django
+  '''
+  /** ContentType(id, app_label, model) */
+  export interface ContentType {
+  app_label: string
+  id: number
+  model: string
+  }
+  /**
+   * Groups are a generic way of categorizing users to apply permissions, or
+   * some other label, to those users. A user can belong to any number of
+   * groups.
+   * 
+   * A user in a group automatically has all the permissions granted to that
+   * group. For example, if the group 'Site editors' has the permission
+   * can_edit_home_page, any user in that group will have that permission.
+   * 
+   * Beyond permissions, groups are a convenient way to categorize users to
+   * apply some label, or extended functionality, to them. For example, you
+   * could create a group 'Special users', and you could write code that would
+   * do special things to those users -- such as giving them access to a
+   * members-only portion of your site, or sending them members-only email
+   * messages.
+   */
+  export interface Group {
+  id: number
+  name: string
+  permissions: (Permission)[] /* many-to-many relation */
+  }
+  /**
+   * The permissions system provides a way to assign permissions to specific
+   * users and groups of users.
+   * 
+   * The permission system is used by the Django admin site, but may also be
+   * useful in your own code. The Django admin site uses permissions as follows:
+   * 
+   *     - The "add" permission limits the user's ability to view the "add" form
+   *       and add an object.
+   *     - The "change" permission limits a user's ability to view the change
+   *       list, view the "change" form and change an object.
+   *     - The "delete" permission limits the ability to delete an object.
+   *     - The "view" permission limits the ability to view an object.
+   * 
+   * Permissions are set globally per type of object, not per specific object
+   * instance. It is possible to say "Mary may change news stories," but it's
+   * not currently possible to say "Mary may change news stories, but only the
+   * ones she created herself" or "Mary may only change news stories that have a
+   * certain status or publication date."
+   * 
+   * The permissions listed above are automatically created for each model.
+   */
+  export interface Permission {
+  codename: string
+  content_type: ContentType /* foreign key relation */
+  id: number
+  name: string
+  }
+  /** Because pets always have drama at 3 AM */
+  export interface PetEmergencyContact {
+  /** When they can actually help */
+  availability: string
+  gig: PetSittingGig /* foreign key relation */
+  id: number
+  name: string
+  phone: string
+  /** Aunt, neighbor, fellow pet parent, etc. */
+  relationship: string
+  }
+  /** For when pets have more prescriptions than their owners */
+  export interface PetMedication {
+  /** Hidden in food, wrestling match, or magic trick */
+  administration_method: string
+  dosage: string
+  /** How often to drug the pet */
+  frequency: string
+  gig: PetSittingGig /* foreign key relation */
+  id: number
+  medication_name: string
+  }
+  /**
+   * A comprehensive model for a pet sitting business that somehow needs
+   * to track an absurd amount of information about each gig.
+   */
+  export interface PetSittingGig {
+  /** Emergency reinforcement */
+  backup_sitter: User | null /* foreign key relation */
+  created_at: ISO8601Date
+  /** What this chaos costs */
+  daily_rate: number
+  difficulty_level: "easy" | "moderate" | "hard" | "expert" | "impossible"
+  /** When things go sideways */
+  emergency_contact_info: string
+  /** When freedom returns */
+  end_date: ISO8601Date
+  /** Auto-incrementing gig number */
+  gig_number: number
+  /** Please don't set this off */
+  house_alarm_code: number | null
+  /** Which key opens what */
+  house_key_photo: string /* file field */
+  /** Encrypted WiFi password */
+  house_wifi_password: unknown /* bytes */
+  id: UUID
+  /** Houdini tendencies? */
+  is_escape_artist: boolean
+  /** Are we dealing with surprises? */
+  is_house_trained: boolean
+  /** When they last conned someone into food */
+  last_fed: ISO8601Date | null
+  /** Am I now a pet pharmacist? */
+  needs_medication: boolean
+  /** Size of the furry army */
+  number_of_pets: number
+  /** Scale of 1-10, where 10 is 'calls every hour' */
+  owner_anxiety_level: number
+  /** For sending cute pet pics */
+  owner_email: string
+  /** Am I being watched? */
+  owner_has_security_cameras: boolean
+  /** Novel-length instructions from neurotic pet parents */
+  owner_notes: string
+  payment_status: "pending" | "partial" | "paid" | "overdue"
+  /** Because of course they have one */
+  pet_instagram: string
+  /** Do I need to maintain their brand? */
+  pet_is_social_media_famous: boolean
+  /** What do we call this furry overlord? */
+  pet_name: string
+  /** Their street name */
+  pet_nickname: string
+  /** Mugshot for identification */
+  pet_photo: string /* file field */
+  pet_species: "dog" | "cat" | "bird" | "fish" | "hamster" | "snake" | "turtle" | "other"
+  /** In pounds (for dosing purposes) */
+  pet_weight: number
+  /** Where the good stuff is stashed */
+  secret_treat_hiding_spots: string
+  /** For checking in remotely */
+  security_camera_ip: string | null
+  /** The brave soul taking this on */
+  sitter: User /* foreign key relation */
+  /** URL-friendly identifier */
+  slug: string
+  /** Structured chaos: feeding times, quirks, emergency protocols */
+  special_instructions: unknown /* any */
+  /** When the adventure begins */
+  start_date: ISO8601Date
+  /** Exact moment of responsibility transfer */
+  start_time: ISO8601Time
+  /** How long they drag you around the block */
+  typical_walk_duration: string
+  updated_at: ISO8601Date
+  /** Proof of shots */
+  vaccination_records: string /* file field */
+  /** Dr. Whiskers' online presence */
+  vet_website: string
+  }
+  /**
+   * Users within the Django authentication system are represented by this
+   * model.
+   * 
+   * Username and password are required. Other fields are optional.
+   */
+  export interface User {
+  date_joined: ISO8601Date
+  email: string
+  first_name: string
+  /** The groups this user belongs to. A user will get all permissions granted to each of their groups. */
+  groups: (Group)[] /* many-to-many relation */
+  id: number
+  /** Designates whether this user should be treated as active. Unselect this instead of deleting accounts. */
+  is_active: boolean
+  /** Designates whether the user can log into this admin site. */
+  is_staff: boolean
+  /** Designates that this user has all permissions without explicitly assigning them. */
+  is_superuser: boolean
+  last_login: ISO8601Date | null
+  last_name: string
+  password: string
+  /** Specific permissions for this user. */
+  user_permissions: (Permission)[] /* many-to-many relation */
+  /** Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only. */
+  username: string
+  }
+  export type ISO8601Date = string
+  export type ISO8601Time = string
+  export type UUID = string
+  
+  '''
+# ---

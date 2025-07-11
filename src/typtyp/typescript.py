@@ -293,6 +293,14 @@ def get_struct_types(tp) -> list[FieldInfo] | None:
     except ImportError:  # pragma: no cover  # TODO: handle ImportError better
         pass
 
+    try:
+        from typtyp.django import get_model_fields, is_django_model
+
+        if is_django_model(tp):
+            return list(get_model_fields(tp))
+    except ImportError:  # pragma: no cover  # TODO: handle ImportError better
+        pass
+
     return None
 
 
