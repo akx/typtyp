@@ -1,0 +1,1 @@
+# Placate pytest-django.

@@ -28,15 +28,6 @@ if TYPE_CHECKING:
 RECORD_KEY_TS_TYPE = "string | number | symbol"
 
 
-def is_pydantic_model(t) -> bool:
-    try:
-        from pydantic import BaseModel
-
-        return issubclass(t, BaseModel)
-    except ImportError:  # pragma: no cover
-        return False
-
-
 class TypeAndKind(NamedTuple):
     type: type
     kind: str | None
@@ -222,9 +213,19 @@ def get_struct_types(tp) -> list[tuple[str, Any]] | None:
         return list(typing.get_type_hints(tp, include_extras=True).items())
 
     try:
+        from typtyp.pydantic import get_pydantic_fields, is_pydantic_model
+
         if is_pydantic_model(tp):
-            return [(name, f.annotation) for (name, f) in sorted(tp.model_fields.items(), key=lambda item: item[0])]
-    except TypeError:  # pragma: no cover
+            return list(get_pydantic_fields(tp))
+    except ImportError:  # pragma: no cover  # TODO: handle ImportError better
+        pass
+
+    try:
+        from typtyp.drf import get_serializer_fields, is_drf_serializer
+
+        if is_drf_serializer(tp):
+            return list(get_serializer_fields(tp))
+    except ImportError:  # pragma: no cover  # TODO: handle ImportError better
         pass
 
     return None

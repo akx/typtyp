@@ -1,0 +1,99 @@
+# serializer version: 1
+# name: test_drf
+  '''
+  /**
+   * Basic user serializer for nested relationships
+   */
+  export interface UserSerializer {
+  email: string
+  first_name: string
+  full_name: unknown /* any */
+  id: number
+  last_name: string
+  username: string
+  }
+  /**
+   * Serializer for pet medications
+   */
+  export interface PetMedicationSerializer {
+  administration_method: string
+  dosage: string
+  frequency: string
+  id: number
+  medication_name: string
+  }
+  /**
+   * Serializer for emergency contacts
+   */
+  export interface PetEmergencyContactSerializer {
+  availability: string
+  id: number
+  name: string
+  phone: string
+  relationship: string
+  }
+  /**
+   * Main serializer for pet sitting gigs with all the bells and whistles
+   */
+  export interface PetSittingGigSerializer {
+  backup_sitter: unknown /* any */
+  created_at: ISO8601
+  daily_rate: number
+  days_until_start: unknown /* any */
+  difficulty_level: string
+  difficulty_level_display: string
+  emergency_contact_info: string
+  emergency_contacts: (PetEmergencyContactSerializer)[]
+  end_date: ISO8601Date
+  gig_number: number
+  gig_status: unknown /* any */
+  house_alarm_code: number
+  house_key_photo: string
+  house_key_photo_base64: string
+  house_wifi_password: string
+  house_wifi_password_encrypted: unknown /* any */
+  id: UUID
+  is_current_gig: unknown /* any */
+  is_escape_artist: boolean
+  is_house_trained: boolean
+  last_fed: ISO8601
+  medications: (PetMedicationSerializer)[]
+  needs_medication: boolean
+  number_of_pets: number
+  owner_anxiety_level: number
+  owner_email: string
+  owner_has_security_cameras: boolean
+  owner_notes: string
+  payment_status: string
+  payment_status_display: string
+  pet_instagram: string
+  pet_is_social_media_famous: boolean
+  pet_name: string
+  pet_nickname: string
+  pet_photo: string
+  pet_photo_base64: string
+  pet_species: string
+  pet_species_display: string
+  pet_weight: number
+  secret_treat_hiding_spots: string
+  security_camera_ip: string
+  sitter: UserSerializer
+  slug: string
+  special_instructions: unknown /* any */
+  start_date: ISO8601Date
+  start_time: ISO8601Time
+  total_cost: unknown /* any */
+  total_days: unknown /* any */
+  typical_walk_duration: string
+  updated_at: ISO8601
+  vaccination_records: string
+  vaccination_records_base64: string
+  vet_website: string
+  }
+  export type ISO8601 = string
+  export type ISO8601Date = string
+  export type ISO8601Time = string
+  export type UUID = string
+  
+  '''
+# ---
