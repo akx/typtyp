@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Iterable
+from typing import Iterable
 
 from pydantic import BaseModel
+
+from typtyp.internal import FieldInfo
 
 
 def is_pydantic_model(t) -> bool:
@@ -15,6 +17,6 @@ def is_pydantic_model(t) -> bool:
         return False
 
 
-def get_pydantic_fields(tp) -> Iterable[tuple[str, Any]]:
+def get_pydantic_fields(tp) -> Iterable[FieldInfo]:
     for name, f in sorted(tp.model_fields.items(), key=lambda item: item[0]):
-        yield (name, f.annotation)
+        yield FieldInfo(name=name, type=f.annotation)

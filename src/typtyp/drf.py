@@ -8,6 +8,7 @@ from typing import Annotated, Any, Iterable
 from rest_framework import fields, relations, serializers
 
 from typtyp.annotations import Comment
+from typtyp.internal import FieldInfo
 
 STRINGLIKE_FIELDS = (
     fields.CharField,
@@ -76,8 +77,11 @@ def get_drf_field_type(field: fields.Field) -> type:
     raise NotImplementedError(f"Unsupported DRF field type ({type(field).__name__}): {field!r}")
 
 
-def get_serializer_fields(ser_type: type[serializers.Serializer]) -> Iterable[tuple[str, Any]]:
+def get_serializer_fields(ser_type: type[serializers.Serializer]) -> Iterable[FieldInfo]:
     context = {"request": None}
     for name, field in sorted(ser_type(context=context).fields.items(), key=lambda item: item[0]):
-        typ = get_drf_field_type(field)
-        yield (name, typ)
+        yield FieldInfo(
+            name=name,
+            type=get_drf_field_type(field),
+            doc=str(field.help_text) if field.help_text else None,
+        )

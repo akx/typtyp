@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, Any, ForwardRef, NamedTuple, TextIO, TypeVar
 from typtyp.annotations import Comment
 from typtyp.consts import COLLECTION_ORIGINS, MAPPING_ORIGINS
 from typtyp.excs import UnreferrableTypeError
+from typtyp.internal import FieldInfo
 from typtyp.type_info import TypeInfo
 
 if TYPE_CHECKING:
@@ -264,15 +265,17 @@ def to_ts_type(field_type: type, ts_context: TypeScriptContext) -> str:  # noqa:
     return maybe_add_comments(type_name, comments)
 
 
-def get_struct_types(tp) -> list[tuple[str, Any]] | None:
+def get_struct_types(tp) -> list[FieldInfo] | None:
     if dataclasses.is_dataclass(tp):
-        return [(f.name, f.type) for f in dataclasses.fields(tp)]
+        return [FieldInfo(name=f.name, type=f.type) for f in dataclasses.fields(tp)]
 
     if typing.is_typeddict(tp):
         # TODO: support __total__
         # TODO: support __required_keys__
         # TODO: support __optional_keys__
-        return list(typing.get_type_hints(tp, include_extras=True).items())
+        return [
+            FieldInfo(name=name, type=type) for (name, type) in typing.get_type_hints(tp, include_extras=True).items()
+        ]
 
     try:
         from typtyp.pydantic import get_pydantic_fields, is_pydantic_model
@@ -293,16 +296,30 @@ def get_struct_types(tp) -> list[tuple[str, Any]] | None:
     return None
 
 
-def write_structlike(ctx: TypeScriptContext, type_info: TypeInfo, name_and_type: Iterable[tuple[str, type]]) -> None:
+def maybe_write_doc(ctx: TypeScriptContext, doc: str | None) -> None:
+    if not doc:
+        return
+    lines = textwrap.dedent(doc).strip().splitlines()
+    if len(lines) > 1:
+        ctx.write("/**\n")
+        for line in lines:
+            ctx.write(f" * {line}\n")
+        ctx.write(" */\n")
+    else:
+        ctx.write(f"/** {lines[0]} */\n")
+
+
+def write_structlike(ctx: TypeScriptContext, type_info: TypeInfo, field_infos: Iterable[FieldInfo]) -> None:
     ctx = ctx.sub(null_is_undefined=type_info.null_is_undefined)
     ctx.write(f"{ctx.get_export_modifier(type_info)}interface {type_info.name} {{\n")
-    for name, typ in name_and_type:
-        ts_type = to_ts_type(typ, ts_context=ctx).strip()
+    for fi in field_infos:
+        ts_type = to_ts_type(fi.type, ts_context=ctx).strip()
         field_suffix = ""
         if "| undefined" in ts_type:
             ts_type = ts_type.replace("| undefined", "")
             field_suffix = "?"
-        ctx.write(f"{name}{field_suffix}: {ts_type}\n")
+        maybe_write_doc(ctx, fi.doc)
+        ctx.write(f"{fi.name}{field_suffix}: {ts_type}\n")
     ctx.write("}\n")
 
 
@@ -314,11 +331,7 @@ def write_enum(ctx: TypeScriptContext, type_info: TypeInfo) -> None:
 
 
 def write_type(ctx: TypeScriptContext, type_info: TypeInfo) -> None:
-    if type_info.doc:
-        ctx.write("/**\n")
-        for line in textwrap.dedent(type_info.doc).strip().splitlines():
-            ctx.write(f" * {line}\n")
-        ctx.write(" */\n")
+    maybe_write_doc(ctx, type_info.doc)
 
     if isinstance(type_info.type, type) and issubclass(type_info.type, enum.Enum):
         return write_enum(ctx, type_info)

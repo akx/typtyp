@@ -66,9 +66,7 @@
   py_ordered_dict: Record<string | number | symbol, unknown> /* OrderedDict */
   recursive_field: KitchenSink
   }
-  /**
-   * Address(street: str, city: str, postal_code: str, country: str)
-   */
+  /** Address(street: str, city: str, postal_code: str, country: str) */
   export interface Address {
   street: string
   city: string
@@ -90,18 +88,14 @@
   TWO = 2,
   THREE = 3,
   }
-  /**
-   * Point(x, y, z)
-   */
+  /** Point(x, y, z) */
   export type Point = [unknown /* x */, unknown /* y */, unknown /* z */] /* Point */
   export interface NestedConfig {
   timeout: number
   retry_count: number
   debug_mode: boolean
   }
-  /**
-   * Person2(name, age, email)
-   */
+  /** Person2(name, age, email) */
   export type Person2 = [unknown /* name */, unknown /* age */, unknown /* email */] /* Person2 */
   export type ISO8601 = string
   export type ISO8601Date = string
