@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import inspect
 import uuid
 from decimal import Decimal
 from typing import Annotated, Any, Iterable, Literal, Union
@@ -40,10 +41,6 @@ SIMPLE_FIELD_TYPES = {
         Any,
         Comment(comment="primary key related field"),
     ],
-    serializers.SerializerMethodField: Annotated[  # TODO: should look up the return type of the method
-        Any,
-        Comment(comment="method rtype unknown"),
-    ],
 }
 
 
@@ -70,6 +67,16 @@ def get_drf_field_type(field: fields.Field) -> type:
         return list[get_drf_field_type(field.child)]
     if isinstance(field, fields.ChoiceField):
         return Union[*(Literal[choice] for choice in field.choices)]
+    if isinstance(field, serializers.SerializerMethodField):
+        method = getattr(field.parent, field.method_name)
+        rtype = inspect.get_annotations(method).get("return", Any)
+        if isinstance(rtype, str):
+            # If the return type is a string, assume it's a forward reference
+            return Annotated[
+                Any,
+                Comment(comment=f"forward reference: {rtype}"),
+            ]
+        return rtype
     if isinstance(field, STRINGLIKE_FIELDS):
         return str
     for field_type, typ in SIMPLE_FIELD_TYPES.items():

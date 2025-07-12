@@ -5,7 +5,7 @@
   export interface UserSerializer {
   email: string
   first_name: string
-  full_name: unknown /* method rtype unknown */
+  full_name: string
   id: number
   last_name: string
   /** Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only. */
@@ -37,7 +37,7 @@
   created_at: ISO8601
   /** What this chaos costs */
   daily_rate: number
-  days_until_start: unknown /* method rtype unknown */
+  days_until_start: number
   difficulty_level: "easy" | "moderate" | "hard" | "expert" | "impossible"
   difficulty_level_display: string
   /** When things go sideways */
@@ -47,16 +47,16 @@
   end_date: ISO8601Date
   /** Auto-incrementing gig number */
   gig_number: number
-  gig_status: unknown /* method rtype unknown */
+  gig_status: string
   /** Please don't set this off */
   house_alarm_code: number
   /** Which key opens what */
   house_key_photo: string /* file field */
   house_key_photo_base64: string
   house_wifi_password: string
-  house_wifi_password_encrypted: unknown /* method rtype unknown */
+  house_wifi_password_encrypted: boolean
   id: UUID
-  is_current_gig: unknown /* method rtype unknown */
+  is_current_gig: boolean
   /** Houdini tendencies? */
   is_escape_artist: boolean
   /** Are we dealing with surprises? */
