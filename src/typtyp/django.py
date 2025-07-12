@@ -59,7 +59,7 @@ def get_django_field_type(field: models.Field, *, model_type: type[models.Model]
         return (get_referred_model_type(field, model_type), "one-to-one relation")
     if isinstance(field, models.ForeignKey):
         return (get_referred_model_type(field, model_type), "foreign key relation")
-    raise NotImplementedError(f"Unsupported Django field type ({type(field).__name__}): {field!r}")
+    raise NotImplementedError(f"Unsupported Django field type ({type(field).__name__}): {field!r}")  # pragma: no cover
 
 
 def is_django_model(t) -> bool:
@@ -68,7 +68,7 @@ def is_django_model(t) -> bool:
     """
     try:
         return issubclass(t, models.Model)
-    except Exception:
+    except Exception:  # pragma: no cover
         return False
 
 

@@ -13,7 +13,7 @@ def is_pydantic_model(t) -> bool:
     """
     try:
         return issubclass(t, BaseModel)
-    except Exception:
+    except Exception:  # pragma: no cover
         return False
 
 
