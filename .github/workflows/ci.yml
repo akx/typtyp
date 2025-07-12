@@ -19,13 +19,16 @@ jobs:
           - "3.11"
           - "3.12"
           - "3.13"
+        sync-args:
+          - "--all-extras --group=dev-django"
+          - ""
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: "${{ matrix.python-version }}"
       - run: cd tests && npm i
-      - run: uv sync --all-extras
+      - run: uv sync ${{ matrix.sync-args }}
       - run: uv run pytest -vvv --cov .
 
   Lint:

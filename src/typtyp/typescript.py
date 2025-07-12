@@ -17,8 +17,10 @@ import uuid
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, ForwardRef, NamedTuple, TextIO, TypeVar
 
+from typtyp.annotations import Comment
 from typtyp.consts import COLLECTION_ORIGINS, MAPPING_ORIGINS
 from typtyp.excs import UnreferrableTypeError
+from typtyp.internal import FieldInfo
 from typtyp.type_info import TypeInfo
 
 if TYPE_CHECKING:
@@ -26,15 +28,6 @@ if TYPE_CHECKING:
 
 
 RECORD_KEY_TS_TYPE = "string | number | symbol"
-
-
-def is_pydantic_model(t) -> bool:
-    try:
-        from pydantic import BaseModel
-
-        return issubclass(t, BaseModel)
-    except ImportError:  # pragma: no cover
-        return False
 
 
 class TypeAndKind(NamedTuple):
@@ -70,7 +63,18 @@ class TypeScriptContext:
         return ""
 
 
-def map_plain_type_ref(field_type: type, ts_context: TypeScriptContext) -> str:  # noqa: C901, PLR0911, PLR0912
+@dataclasses.dataclass(frozen=True)
+class TSTypeAndComment:
+    name: str
+    comments: list[str] = dataclasses.field(default_factory=list)
+
+
+def map_plain_type_ref(
+    field_type: type,
+    ts_context: TypeScriptContext,
+    *,
+    elide_any_comment=False,
+) -> str | TSTypeAndComment:
     try:
         # This will handle enums as well – they need to have been registered
         return ts_context.world.get_name_for_type(field_type)
@@ -80,25 +84,25 @@ def map_plain_type_ref(field_type: type, ts_context: TypeScriptContext) -> str: 
     # Special types
 
     if isinstance(field_type, ForwardRef):
-        return f"unknown /* forward reference: {field_type.__forward_arg__} */"
+        return TSTypeAndComment("unknown", [f"forward reference: {field_type.__forward_arg__}"])
     if type(field_type) is TypeVar:
-        return f"unknown /* type: {field_type} */"
+        return TSTypeAndComment("unknown", [f"type: {field_type}"])
     if type(field_type) is type(Ellipsis):
-        return "unknown /* ... */"
+        return TSTypeAndComment("unknown", ["..."])
     if field_type is Any:
-        return "unknown /* any */"
+        return TSTypeAndComment("unknown", ["any" if not elide_any_comment else ""])
 
     if issubclass(field_type, (bytes, bytearray, memoryview)):
-        return f"unknown /* {field_type.__name__} */"
+        return TSTypeAndComment("unknown", [field_type.__name__])
 
     if issubclass(field_type, bool):
         return "boolean"
 
     if issubclass(field_type, complex):
-        return "[number, number] /* complex */"
+        return TSTypeAndComment("[number, number]", ["complex"])
 
     if issubclass(field_type, (pathlib.Path, ipaddress._IPAddressBase, re.Pattern)):
-        return f"string /* {field_type.__name__} */"
+        return TSTypeAndComment("string", [field_type.__name__])
 
     if issubclass(field_type, (int, float, decimal.Decimal, datetime.timedelta)) and not issubclass(
         field_type,
@@ -131,11 +135,11 @@ def map_plain_type_ref(field_type: type, ts_context: TypeScriptContext) -> str: 
         return "ISO8601"
 
     if issubclass(field_type, collections.Counter):
-        return f"Record<{RECORD_KEY_TS_TYPE}, number> /* Counter */"
+        return TSTypeAndComment(f"Record<{RECORD_KEY_TS_TYPE}, number>", ["Counter"])
 
     if issubclass(field_type, dict):
-        comment = f" /* {field_type.__name__} */" if field_type is not dict else ""
-        return f"Record<{RECORD_KEY_TS_TYPE}, unknown>{comment}"
+        comment = field_type.__name__ if field_type is not dict else ""
+        return TSTypeAndComment(f"Record<{RECORD_KEY_TS_TYPE}, unknown>", [comment])
 
     raise UnreferrableTypeError(f"Unable to refer to the type {field_type!r}; if it's a struct, add it to the world")
 
@@ -151,6 +155,19 @@ def to_ts_function_declaration(field_type: type, ts_context: TypeScriptContext) 
     raise AssertionError(f"Expected Callable with 0 or 2 types, got {tps}")
 
 
+def format_comment(comments: list[str]) -> str:
+    comments = [c.strip() for c in comments if c.strip()]
+    if not comments:
+        return ""
+    comment_string = ", ".join(comments)
+    return f" /* {comment_string} */"
+
+
+def maybe_add_comments(expr, comments: list[str]) -> str:
+    formatted_comments = format_comment(comments)
+    return f"{expr}{formatted_comments}"
+
+
 def to_ts_type(field_type: type, ts_context: TypeScriptContext) -> str:  # noqa: C901, PLR0911, PLR0912
     if isinstance(field_type, typing.NewType):
         tp = to_ts_type(field_type.__supertype__, ts_context)  # pyright: ignore
@@ -158,88 +175,159 @@ def to_ts_type(field_type: type, ts_context: TypeScriptContext) -> str:  # noqa:
 
     origin = typing.get_origin(field_type)
 
+    annotations = []
+
+    if origin is typing.Annotated:
+        # Peel off outermost Annotated, if any...
+        field_type, *annotations = typing.get_args(field_type)
+        origin = typing.get_origin(field_type)
+
+    comments = [c.comment for c in annotations if isinstance(c, Comment)]
+
     if origin is collections.abc.Callable:
-        return to_ts_function_declaration(field_type, ts_context)
+        return maybe_add_comments(
+            to_ts_function_declaration(field_type, ts_context),
+            comments,
+        )
 
     if origin in (typing.Union, types.UnionType):
-        return " | ".join(to_ts_type(sub, ts_context) for sub in typing.get_args(field_type))
+        expr = " | ".join(to_ts_type(sub, ts_context) for sub in typing.get_args(field_type))
+        return maybe_add_comments(expr, comments)
 
     if origin is tuple:
         tps = typing.get_args(field_type)
         if tps and tps[-1] is Ellipsis:
             if len(tps) != 2:
                 raise AssertionError(f"Expected tuple with one type and Ellipsis, got {tps}")
-            return f"[...{to_ts_type(tps[0], ts_context)}[]]"
-
-        return f"[{', '.join(to_ts_type(tp, ts_context) for tp in tps)}]"
+            expr = f"[...{to_ts_type(tps[0], ts_context)}[]]"
+        else:
+            expr = f"[{', '.join(to_ts_type(tp, ts_context) for tp in tps)}]"
+        return maybe_add_comments(expr, comments)
 
     if origin is typing.Literal:
-        return " | ".join(json.dumps(arg) for arg in typing.get_args(field_type))
+        expr = " | ".join(json.dumps(arg) for arg in typing.get_args(field_type))
+        if not expr:
+            raise AssertionError(f"Literal with no arguments is not allowed: {field_type!r}")
+        return maybe_add_comments(expr, comments)
 
     if origin in COLLECTION_ORIGINS:  # TODO: Smells like this could be done better with the ABCs...
-        comment = f" /* {origin.__name__} */" if origin is not list else ""
+        if origin is not list:
+            comments.insert(0, origin.__name__)
         tps = typing.get_args(field_type)
         if len(tps) != 1:
             raise AssertionError(f"Expected list with one type, got {tps}")
         inner = to_ts_type(tps[0], ts_context)
         if inner.rstrip("[]").isalnum():
-            return f"({inner})[]{comment}"
-        return f"Array<{inner}>{comment}"
+            expr = f"({inner})[]"
+        else:
+            expr = f"Array<{inner}>"
+        return maybe_add_comments(expr, comments)
 
     if origin is collections.Counter:
         tps = typing.get_args(field_type)
         if len(tps) != 1:
             raise AssertionError(f"Expected Counter with one type, got {tps}")
-        return f"Record<{to_ts_type(tps[0], ts_context)}, number>"
+        expr = f"Record<{to_ts_type(tps[0], ts_context)}, number>"
+        return maybe_add_comments(expr, comments)
 
     if origin in MAPPING_ORIGINS:  # TODO: Smells like this could be done better with the ABCs...
-        comment = f" /* {origin.__name__} */" if origin is not dict else ""
+        if origin is not dict:
+            comments.insert(0, origin.__name__)
         tps = typing.get_args(field_type)
         if len(tps) != 2:
             raise AssertionError(f"Expected dict with two types, got {tps}")
-        return f"Record<{to_ts_type(tps[0], ts_context)}, {to_ts_type(tps[1], ts_context)}>{comment}"
+        expr = f"Record<{to_ts_type(tps[0], ts_context)}, {to_ts_type(tps[1], ts_context)}>"
+        return maybe_add_comments(expr, comments)
 
     if origin is not None:
         raise NotImplementedError(f"Unknown origin {origin!r} for {field_type!r}")  # pragma: no cover
 
     if hasattr(field_type, "_fields") and issubclass(field_type, tuple):
         # NamedTuple defined inline? I guess, why not...
+        comments.insert(0, field_type.__name__)
         fields: list[str] = field_type._fields  # pyright: ignore
         contents = (f"unknown /* {name} */" for name in fields)
-        return f"[{', '.join(contents)}] /* {field_type.__name__} */"
+        expr = f"[{', '.join(contents)}]"
+        return maybe_add_comments(expr, comments)
 
-    return map_plain_type_ref(field_type, ts_context)
+    plain_ref_ret = map_plain_type_ref(
+        field_type,
+        ts_context,
+        elide_any_comment=bool(
+            comments,  # If we have comments, we expect them to explain the situation better than "any"
+        ),
+    )
+    if isinstance(plain_ref_ret, str):
+        type_name = plain_ref_ret
+    else:
+        type_name = plain_ref_ret.name
+        comments.extend(plain_ref_ret.comments)
+    return maybe_add_comments(type_name, comments)
 
 
-def get_struct_types(tp) -> list[tuple[str, Any]] | None:
+def get_struct_types(tp) -> list[FieldInfo] | None:
     if dataclasses.is_dataclass(tp):
-        return [(f.name, f.type) for f in dataclasses.fields(tp)]
+        return [FieldInfo(name=f.name, type=f.type) for f in dataclasses.fields(tp)]
 
     if typing.is_typeddict(tp):
         # TODO: support __total__
         # TODO: support __required_keys__
         # TODO: support __optional_keys__
-        return list(typing.get_type_hints(tp, include_extras=True).items())
+        return [
+            FieldInfo(name=name, type=type) for (name, type) in typing.get_type_hints(tp, include_extras=True).items()
+        ]
 
     try:
+        from typtyp.pydantic import get_pydantic_fields, is_pydantic_model
+
         if is_pydantic_model(tp):
-            return [(name, f.annotation) for (name, f) in sorted(tp.model_fields.items(), key=lambda item: item[0])]
-    except TypeError:  # pragma: no cover
+            return list(get_pydantic_fields(tp))
+    except ImportError:  # pragma: no cover  # TODO: handle ImportError better
+        pass
+
+    try:
+        from typtyp.drf import get_serializer_fields, is_drf_serializer
+
+        if is_drf_serializer(tp):
+            return list(get_serializer_fields(tp))
+    except ImportError:  # pragma: no cover  # TODO: handle ImportError better
+        pass
+
+    try:
+        from typtyp.django import get_model_fields, is_django_model
+
+        if is_django_model(tp):
+            return list(get_model_fields(tp))
+    except ImportError:  # pragma: no cover  # TODO: handle ImportError better
         pass
 
     return None
 
 
-def write_structlike(ctx: TypeScriptContext, type_info: TypeInfo, name_and_type: Iterable[tuple[str, type]]) -> None:
+def maybe_write_doc(ctx: TypeScriptContext, doc: str | None) -> None:
+    if not doc:
+        return
+    lines = textwrap.dedent(doc).strip().splitlines()
+    if len(lines) > 1:
+        ctx.write("/**\n")
+        for line in lines:
+            ctx.write(f" * {line}\n")
+        ctx.write(" */\n")
+    else:
+        ctx.write(f"/** {lines[0]} */\n")
+
+
+def write_structlike(ctx: TypeScriptContext, type_info: TypeInfo, field_infos: Iterable[FieldInfo]) -> None:
     ctx = ctx.sub(null_is_undefined=type_info.null_is_undefined)
     ctx.write(f"{ctx.get_export_modifier(type_info)}interface {type_info.name} {{\n")
-    for name, typ in name_and_type:
-        ts_type = to_ts_type(typ, ts_context=ctx).strip()
+    for fi in field_infos:
+        ts_type = to_ts_type(fi.type, ts_context=ctx).strip()
         field_suffix = ""
         if "| undefined" in ts_type:
             ts_type = ts_type.replace("| undefined", "")
             field_suffix = "?"
-        ctx.write(f"{name}{field_suffix}: {ts_type}\n")
+        maybe_write_doc(ctx, fi.doc)
+        ctx.write(f"{fi.name}{field_suffix}: {ts_type}\n")
     ctx.write("}\n")
 
 
@@ -251,11 +339,7 @@ def write_enum(ctx: TypeScriptContext, type_info: TypeInfo) -> None:
 
 
 def write_type(ctx: TypeScriptContext, type_info: TypeInfo) -> None:
-    if type_info.doc:
-        ctx.write("/**\n")
-        for line in textwrap.dedent(type_info.doc).strip().splitlines():
-            ctx.write(f" * {line}\n")
-        ctx.write(" */\n")
+    maybe_write_doc(ctx, type_info.doc)
 
     if isinstance(type_info.type, type) and issubclass(type_info.type, enum.Enum):
         return write_enum(ctx, type_info)

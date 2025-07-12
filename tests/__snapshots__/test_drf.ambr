@@ -1,0 +1,126 @@
+# serializer version: 1
+# name: test_drf
+  '''
+  /** Basic user serializer for nested relationships */
+  export interface UserSerializer {
+  email: string
+  first_name: string
+  full_name: unknown /* method rtype unknown */
+  id: number
+  last_name: string
+  /** Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only. */
+  username: string
+  }
+  /** Serializer for pet medications */
+  export interface PetMedicationSerializer {
+  /** Hidden in food, wrestling match, or magic trick */
+  administration_method: string
+  dosage: string
+  /** How often to drug the pet */
+  frequency: string
+  id: number
+  medication_name: string
+  }
+  /** Serializer for emergency contacts */
+  export interface PetEmergencyContactSerializer {
+  /** When they can actually help */
+  availability: string
+  id: number
+  name: string
+  phone: string
+  /** Aunt, neighbor, fellow pet parent, etc. */
+  relationship: string
+  }
+  /** Main serializer for pet sitting gigs with all the bells and whistles */
+  export interface PetSittingGigSerializer {
+  backup_sitter: unknown /* primary key related field */
+  created_at: ISO8601
+  /** What this chaos costs */
+  daily_rate: number
+  days_until_start: unknown /* method rtype unknown */
+  difficulty_level: "easy" | "moderate" | "hard" | "expert" | "impossible"
+  difficulty_level_display: string
+  /** When things go sideways */
+  emergency_contact_info: string
+  emergency_contacts: (PetEmergencyContactSerializer)[]
+  /** When freedom returns */
+  end_date: ISO8601Date
+  /** Auto-incrementing gig number */
+  gig_number: number
+  gig_status: unknown /* method rtype unknown */
+  /** Please don't set this off */
+  house_alarm_code: number
+  /** Which key opens what */
+  house_key_photo: string /* file field */
+  house_key_photo_base64: string
+  house_wifi_password: string
+  house_wifi_password_encrypted: unknown /* method rtype unknown */
+  id: UUID
+  is_current_gig: unknown /* method rtype unknown */
+  /** Houdini tendencies? */
+  is_escape_artist: boolean
+  /** Are we dealing with surprises? */
+  is_house_trained: boolean
+  /** When they last conned someone into food */
+  last_fed: ISO8601
+  medications: (PetMedicationSerializer)[]
+  /** Am I now a pet pharmacist? */
+  needs_medication: boolean
+  /** Size of the furry army */
+  number_of_pets: number
+  /** Scale of 1-10, where 10 is 'calls every hour' */
+  owner_anxiety_level: number
+  /** For sending cute pet pics */
+  owner_email: string
+  /** Am I being watched? */
+  owner_has_security_cameras: boolean
+  /** Novel-length instructions from neurotic pet parents */
+  owner_notes: string
+  payment_status: "pending" | "partial" | "paid" | "overdue"
+  payment_status_display: string
+  /** Because of course they have one */
+  pet_instagram: string
+  /** Do I need to maintain their brand? */
+  pet_is_social_media_famous: boolean
+  /** What do we call this furry overlord? */
+  pet_name: string
+  /** Their street name */
+  pet_nickname: string
+  /** Mugshot for identification */
+  pet_photo: string /* file field */
+  pet_photo_base64: string
+  pet_species: "dog" | "cat" | "bird" | "fish" | "hamster" | "snake" | "turtle" | "other"
+  pet_species_display: string
+  /** In pounds (for dosing purposes) */
+  pet_weight: number
+  /** Where the good stuff is stashed */
+  secret_treat_hiding_spots: string
+  /** For checking in remotely */
+  security_camera_ip: string
+  sitter: UserSerializer
+  /** URL-friendly identifier */
+  slug: string
+  /** Structured chaos: feeding times, quirks, emergency protocols */
+  special_instructions: unknown /* any */
+  /** When the adventure begins */
+  start_date: ISO8601Date
+  /** Exact moment of responsibility transfer */
+  start_time: ISO8601Time
+  total_cost: unknown /* read only field, type unknown */
+  total_days: unknown /* read only field, type unknown */
+  /** How long they drag you around the block */
+  typical_walk_duration: string
+  updated_at: ISO8601
+  /** Proof of shots */
+  vaccination_records: string /* file field */
+  vaccination_records_base64: string
+  /** Dr. Whiskers' online presence */
+  vet_website: string
+  }
+  export type ISO8601 = string
+  export type ISO8601Date = string
+  export type ISO8601Time = string
+  export type UUID = string
+  
+  '''
+# ---
