@@ -53,7 +53,7 @@ def is_drf_serializer(t) -> bool:
     """
     try:
         return issubclass(t, serializers.Serializer)
-    except Exception:
+    except Exception:  # pragma: no cover
         return False
 
 
@@ -75,7 +75,7 @@ def get_drf_field_type(field: fields.Field) -> type:
     for field_type, typ in SIMPLE_FIELD_TYPES.items():
         if isinstance(field, field_type):
             return typ
-    raise NotImplementedError(f"Unsupported DRF field type ({type(field).__name__}): {field!r}")
+    raise NotImplementedError(f"Unsupported DRF field type ({type(field).__name__}): {field!r}")  # pragma: no cover
 
 
 def get_serializer_fields(ser_type: type[serializers.Serializer]) -> Iterable[FieldInfo]:

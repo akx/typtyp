@@ -19,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "username", "first_name", "last_name", "email", "full_name"]
         read_only_fields = ["id"]
 
-    def get_full_name(self, obj):
+    def get_full_name(self, obj) -> str:
         return f"{obj.first_name} {obj.last_name}".strip() or obj.username
 
 
@@ -148,11 +148,11 @@ class PetSittingGigSerializer(serializers.ModelSerializer):
             "security_camera_ip": {"write_only": True},
         }
 
-    def get_is_current_gig(self, obj):
+    def get_is_current_gig(self, obj) -> bool:
         """Check if this gig is currently active"""
         return obj.is_current()
 
-    def get_gig_status(self, obj):
+    def get_gig_status(self, obj) -> str:  # pragma: no cover
         """Human-readable status of the gig"""
         today = timezone.now().date()
 
@@ -163,13 +163,13 @@ class PetSittingGigSerializer(serializers.ModelSerializer):
         else:
             return "In Progress"
 
-    def get_days_until_start(self, obj):
+    def get_days_until_start(self, obj) -> int:  # pragma: no cover
         """Days until the gig starts (negative if already started)"""
         today = timezone.now().date()
         delta = (obj.start_date - today).days
         return delta
 
-    def get_house_wifi_password_encrypted(self, obj):
+    def get_house_wifi_password_encrypted(self, obj) -> bool:
         """Indicate if WiFi password is stored (without revealing it)"""
         return bool(obj.house_wifi_password)
 
@@ -198,7 +198,7 @@ class PetSittingGigSummarySerializer(serializers.ModelSerializer):
             "gig_status",
         ]
 
-    def get_gig_status(self, obj):
+    def get_gig_status(self, obj) -> str:  # pragma: no cover
         """Human-readable status of the gig"""
         today = timezone.now().date()
 
