@@ -8,7 +8,7 @@ from typing import Annotated, Any, Iterable, Literal, Optional, Union
 from django.db import models
 
 from typtyp.annotations import Comment
-from typtyp.internal import FieldInfo
+from typtyp.field_info import FieldInfo
 
 STRINGLIKE_FIELDS = (
     models.CharField,

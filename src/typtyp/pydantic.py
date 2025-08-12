@@ -4,7 +4,7 @@ from typing import Iterable
 
 from pydantic import BaseModel
 
-from typtyp.internal import FieldInfo
+from typtyp.field_info import FieldInfo
 
 
 def is_pydantic_model(t) -> bool:

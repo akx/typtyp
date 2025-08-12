@@ -9,7 +9,7 @@ from typing import Annotated, Any, Iterable, Literal, Union
 from rest_framework import fields, relations, serializers
 
 from typtyp.annotations import Comment
-from typtyp.internal import FieldInfo
+from typtyp.field_info import FieldInfo
 
 STRINGLIKE_FIELDS = (
     fields.CharField,
