@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import dataclasses
 import io
 from inspect import cleandoc
 from typing import Iterable
 
+from typtyp.type_configuration import TypeConfiguration
 from typtyp.type_info import TypeInfo
 
 
@@ -33,7 +35,7 @@ class World:
         *,
         name: str | None = None,
         doc: str | None | _Sentinel = NOT_SET,
-        null_is_undefined: bool = False,
+        configuration: TypeConfiguration | None = None,
     ) -> TypeInfo:
         if name is None:
             name = typ.__name__
@@ -45,7 +47,12 @@ class World:
         assert name  # noqa: S101
         if name in self._types_by_name:
             raise KeyError(f"Type {name} already exists")
-        info = TypeInfo(name=name, type=typ, doc=real_doc, null_is_undefined=null_is_undefined)
+        info = TypeInfo(
+            name=name,
+            type=typ,
+            doc=real_doc,
+            **(dataclasses.asdict(configuration) if configuration else {}),
+        )
         self._types_by_name[name] = info
         self._types_by_type[typ] = info
         return info
@@ -55,7 +62,7 @@ class World:
         types: tuple[type, ...] | list[type] | set[type] | dict[str, type],
         *,
         doc: str | None | _Sentinel = NOT_SET,
-        null_is_undefined: bool = False,
+        configuration: TypeConfiguration | None = None,
     ) -> dict[type, TypeInfo]:
         types_it: Iterable[tuple[str | None, type]]
         if isinstance(types, dict):
@@ -64,7 +71,7 @@ class World:
             types_it = ((None, typ) for typ in types)
         ret = {}
         for name, typ in types_it:
-            ret[typ] = self.add(typ, name=name, doc=doc, null_is_undefined=null_is_undefined)
+            ret[typ] = self.add(typ, name=name, doc=doc, configuration=configuration)
         return ret
 
     def get_name_for_type(self, t: type) -> str:
