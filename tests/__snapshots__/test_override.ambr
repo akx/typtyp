@@ -1,0 +1,11 @@
+# serializer version: 1
+# name: test_override
+  '''
+  export interface Foo {
+  /** Size of the foo */
+  size: number | string
+  väri: string
+  }
+  
+  '''
+# ---

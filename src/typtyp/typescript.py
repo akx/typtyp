@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING, Any, ForwardRef, NamedTuple, TextIO, TypeVar
 from typtyp.annotations import Comment
 from typtyp.consts import COLLECTION_ORIGINS, MAPPING_ORIGINS
 from typtyp.excs import UnreferrableTypeError
-from typtyp.internal import FieldInfo
+from typtyp.field_info import FieldInfo, FieldInfoDict
 from typtyp.type_info import TypeInfo
 
 if TYPE_CHECKING:
@@ -317,10 +317,34 @@ def maybe_write_doc(ctx: TypeScriptContext, doc: str | None) -> None:
         ctx.write(f"/** {lines[0]} */\n")
 
 
+_NO_OVERRIDE = object()
+
+
+def merge_overrides(
+    field_infos: Iterable[FieldInfo],
+    field_overrides: dict[str, FieldInfo | FieldInfoDict | None],
+) -> Iterable[FieldInfo]:
+    for fi in field_infos:
+        try:
+            override = field_overrides[fi.name]
+        except KeyError:
+            yield fi  # No override
+        else:
+            if override is None:  # Skip the field
+                continue
+            if isinstance(override, FieldInfo):  # Full override
+                yield override
+                continue
+            if isinstance(override, dict):  # Merge override
+                yield dataclasses.replace(fi, **override)
+                continue
+            raise TypeError(f"Expected FieldInfo or FieldInfoDict, got {override!r} for field {fi.name!r}")
+
+
 def write_structlike(ctx: TypeScriptContext, type_info: TypeInfo, field_infos: Iterable[FieldInfo]) -> None:
     ctx = ctx.sub(null_is_undefined=type_info.null_is_undefined)
     ctx.write(f"{ctx.get_export_modifier(type_info)}interface {type_info.name} {{\n")
-    for fi in field_infos:
+    for fi in merge_overrides(field_infos, type_info.field_overrides):
         ts_type = to_ts_type(fi.type, ts_context=ctx).strip()
         field_suffix = ""
         if "| undefined" in ts_type:
