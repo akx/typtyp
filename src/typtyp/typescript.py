@@ -365,8 +365,17 @@ def write_enum(ctx: TypeScriptContext, type_info: TypeInfo) -> None:
 def write_type(ctx: TypeScriptContext, type_info: TypeInfo) -> None:
     maybe_write_doc(ctx, type_info.doc)
 
+    if type_info.import_from:
+        mod, orig_name = type_info.import_from
+        if type_info.name == orig_name:
+            ctx.write(f"import {{ {orig_name} }} from {str(mod)!r}\n")
+        else:
+            ctx.write(f"import {{ {orig_name} as {type_info.name} }} from {str(mod)!r}\n")
+        return
+
     if isinstance(type_info.type, type) and issubclass(type_info.type, enum.Enum):
-        return write_enum(ctx, type_info)
+        write_enum(ctx, type_info)
+        return
 
     if (nt := get_struct_types(type_info.type)) is not None:
         write_structlike(ctx, type_info, nt)

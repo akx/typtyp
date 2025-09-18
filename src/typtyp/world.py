@@ -78,7 +78,15 @@ class World:
         return self._types_by_type[t].name
 
     def __iter__(self):
-        return iter(self._types_by_name.values())
+        # Iterate over types in a sensible order; imported types first, then the rest.
+        types = self._types_by_type.values()
+        rest = []
+        for type_info in types:
+            if type_info.import_from is not None:
+                yield type_info
+            else:
+                rest.append(type_info)
+        yield from rest
 
     def get_typescript(self, **write_ts_kwargs) -> str:
         from typtyp.typescript import write_ts
