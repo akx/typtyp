@@ -21,6 +21,7 @@ from typtyp.annotations import Comment
 from typtyp.consts import COLLECTION_ORIGINS, MAPPING_ORIGINS
 from typtyp.excs import UnreferrableTypeError
 from typtyp.field_info import FieldInfo, FieldInfoDict
+from typtyp.helpers import unique_in_order
 from typtyp.type_info import TypeInfo
 
 if TYPE_CHECKING:
@@ -191,7 +192,7 @@ def to_ts_type(field_type: type, ts_context: TypeScriptContext) -> str:  # noqa:
         )
 
     if origin in (typing.Union, types.UnionType):
-        expr = " | ".join(to_ts_type(sub, ts_context) for sub in typing.get_args(field_type))
+        expr = " | ".join(unique_in_order(to_ts_type(sub, ts_context) for sub in typing.get_args(field_type)))
         return maybe_add_comments(expr, comments)
 
     if origin is tuple:
@@ -205,7 +206,7 @@ def to_ts_type(field_type: type, ts_context: TypeScriptContext) -> str:  # noqa:
         return maybe_add_comments(expr, comments)
 
     if origin is typing.Literal:
-        expr = " | ".join(json.dumps(arg) for arg in typing.get_args(field_type))
+        expr = " | ".join(unique_in_order(json.dumps(arg) for arg in typing.get_args(field_type)))
         if not expr:
             raise AssertionError(f"Literal with no arguments is not allowed: {field_type!r}")
         return maybe_add_comments(expr, comments)
@@ -365,8 +366,17 @@ def write_enum(ctx: TypeScriptContext, type_info: TypeInfo) -> None:
 def write_type(ctx: TypeScriptContext, type_info: TypeInfo) -> None:
     maybe_write_doc(ctx, type_info.doc)
 
+    if type_info.import_from:
+        mod, orig_name = type_info.import_from
+        if type_info.name == orig_name:
+            ctx.write(f"import {{ {orig_name} }} from {str(mod)!r}\n")
+        else:
+            ctx.write(f"import {{ {orig_name} as {type_info.name} }} from {str(mod)!r}\n")
+        return
+
     if isinstance(type_info.type, type) and issubclass(type_info.type, enum.Enum):
-        return write_enum(ctx, type_info)
+        write_enum(ctx, type_info)
+        return
 
     if (nt := get_struct_types(type_info.type)) is not None:
         write_structlike(ctx, type_info, nt)

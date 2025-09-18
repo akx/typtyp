@@ -1,0 +1,12 @@
+# serializer version: 1
+# name: test_override
+  '''
+  import { WibWob as Wibblewobble } from './webby'
+  import { Toot } from './webby'
+  export interface Foo {
+  wibble: Wibblewobble
+  toot: Toot
+  }
+  
+  '''
+# ---

@@ -5,14 +5,12 @@ pytest.importorskip("django")
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
 
-import typtyp
 from tests.django_interop.models import PetEmergencyContact, PetMedication, PetSittingGig
+from tests.helpers import check_with_tsc, typescript_from_types
 
 
 def test_django(snapshot):
-    w = typtyp.World()
-
-    w.add_many(
+    code = typescript_from_types(
         (
             ContentType,
             Group,
@@ -23,4 +21,5 @@ def test_django(snapshot):
             User,
         ),
     )
-    assert w.get_typescript() == snapshot
+    assert check_with_tsc(code)
+    assert code == snapshot

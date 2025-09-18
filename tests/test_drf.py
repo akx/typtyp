@@ -1,8 +1,9 @@
 import pytest
 
+from tests.helpers import check_with_tsc, typescript_from_types
+
 pytest.importorskip("rest_framework")
 
-import typtyp
 from tests.django_interop.serializers import (
     PetEmergencyContactSerializer,
     PetMedicationSerializer,
@@ -12,9 +13,7 @@ from tests.django_interop.serializers import (
 
 
 def test_drf(snapshot):
-    w = typtyp.World()
-
-    w.add_many(
+    code = typescript_from_types(
         (
             UserSerializer,
             PetMedicationSerializer,
@@ -22,4 +21,5 @@ def test_drf(snapshot):
             PetSittingGigSerializer,
         ),
     )
-    assert w.get_typescript() == snapshot
+    assert check_with_tsc(code)
+    assert code == snapshot
