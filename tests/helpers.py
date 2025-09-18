@@ -3,6 +3,8 @@ import subprocess
 import tempfile
 import warnings
 
+import typtyp
+
 TSC_PATH = pathlib.Path(__file__).parent / "node_modules" / ".bin" / "tsc"
 
 
@@ -30,3 +32,9 @@ def check_with_tsc(code, *, extra_files: dict[str, str] | None = None):
         if result.returncode != 0:  # pragma: no cover
             raise TypeScriptFailed(result.stdout + result.stderr)
         return True
+
+
+def typescript_from_types(types) -> str:
+    w = typtyp.World()
+    w.add_many(types)
+    return w.get_typescript()
