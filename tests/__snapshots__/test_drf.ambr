@@ -3,11 +3,11 @@
   '''
   /** Basic user serializer for nested relationships */
   export interface UserSerializer {
-  email: string
-  first_name: string
+  email?: string
+  first_name?: string
   full_name: string
   id: number
-  last_name: string
+  last_name?: string
   /** Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only. */
   username: string
   }
@@ -38,7 +38,7 @@
   /** What this chaos costs */
   daily_rate: number
   days_until_start: number
-  difficulty_level: DifficultyLevel
+  difficulty_level?: DifficultyLevel
   difficulty_level_display: string
   /** When things go sideways */
   emergency_contact_info: string
@@ -49,59 +49,59 @@
   gig_number: number
   gig_status: string
   /** Please don't set this off */
-  house_alarm_code: number
+  house_alarm_code?: number | null
   /** Which key opens what */
-  house_key_photo: string /* file field */
-  house_key_photo_base64: string
-  house_wifi_password: string
+  house_key_photo?: string /* file field */
+  house_key_photo_base64?: string
+  house_wifi_password?: string
   house_wifi_password_encrypted: boolean
   id: UUID
   is_current_gig: boolean
   /** Houdini tendencies? */
-  is_escape_artist: boolean
+  is_escape_artist?: boolean
   /** Are we dealing with surprises? */
-  is_house_trained: boolean
+  is_house_trained?: boolean
   /** When they last conned someone into food */
-  last_fed: ISO8601
+  last_fed?: ISO8601 | null
   medications: (PetMedicationSerializer)[]
   /** Am I now a pet pharmacist? */
-  needs_medication: boolean
+  needs_medication?: boolean
   /** Size of the furry army */
-  number_of_pets: number
+  number_of_pets?: number
   /** Scale of 1-10, where 10 is 'calls every hour' */
   owner_anxiety_level: number
   /** For sending cute pet pics */
   owner_email: string
   /** Am I being watched? */
-  owner_has_security_cameras: boolean
+  owner_has_security_cameras?: boolean
   /** Novel-length instructions from neurotic pet parents */
-  owner_notes: string
-  payment_status: "pending" | "partial" | "paid" | "overdue"
+  owner_notes?: string
+  payment_status?: "pending" | "partial" | "paid" | "overdue"
   payment_status_display: string
   /** Because of course they have one */
-  pet_instagram: string
+  pet_instagram?: string
   /** Do I need to maintain their brand? */
-  pet_is_social_media_famous: boolean
+  pet_is_social_media_famous?: boolean
   /** What do we call this furry overlord? */
   pet_name: string
   /** Their street name */
-  pet_nickname: string
+  pet_nickname?: string
   /** Mugshot for identification */
-  pet_photo: string /* file field */
-  pet_photo_base64: string
+  pet_photo?: string /* file field */
+  pet_photo_base64?: string
   pet_species: "dog" | "cat" | "bird" | "fish" | "hamster" | "snake" | "turtle" | "other"
   pet_species_display: string
   /** In pounds (for dosing purposes) */
   pet_weight: number
   /** Where the good stuff is stashed */
-  secret_treat_hiding_spots: string
+  secret_treat_hiding_spots?: string
   /** For checking in remotely */
-  security_camera_ip: string
+  security_camera_ip?: string | null
   sitter: UserSerializer
   /** URL-friendly identifier */
   slug: string
   /** Structured chaos: feeding times, quirks, emergency protocols */
-  special_instructions: unknown /* any */
+  special_instructions?: unknown /* any */
   /** When the adventure begins */
   start_date: ISO8601Date
   /** Exact moment of responsibility transfer */
@@ -112,10 +112,10 @@
   typical_walk_duration: string
   updated_at: ISO8601
   /** Proof of shots */
-  vaccination_records: string /* file field */
-  vaccination_records_base64: string
+  vaccination_records?: string /* file field */
+  vaccination_records_base64?: string
   /** Dr. Whiskers' online presence */
-  vet_website: string
+  vet_website?: string
   }
   export const enum DifficultyLevel {
   EASY = "easy",

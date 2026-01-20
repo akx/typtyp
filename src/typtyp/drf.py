@@ -4,7 +4,7 @@ import datetime
 import inspect
 import uuid
 from decimal import Decimal
-from typing import Annotated, Any, Iterable, Literal, Union
+from typing import Annotated, Any, Iterable, Literal, Optional, Union
 
 from rest_framework import fields, relations, serializers
 
@@ -88,12 +88,20 @@ def get_drf_field_type(field: fields.Field) -> type:
     raise NotImplementedError(f"Unsupported DRF field type ({type(field).__name__}): {field!r}")  # pragma: no cover
 
 
+def is_drf_field_readonly(field: fields.Field) -> bool:
+    return bool(field.required or field.read_only)
+
+
 def get_serializer_fields(ser_type: type[serializers.Serializer]) -> Iterable[FieldInfo]:
     context = {"request": None}
     for name, field in sorted(ser_type(context=context).fields.items(), key=lambda item: item[0]):
+        print(name, field, field.required, field.read_only)
+        field_type = get_drf_field_type(field)
+        if field.allow_null:
+            field_type = Optional[field_type]
         yield FieldInfo(
             name=name,
-            type=get_drf_field_type(field),
+            type=field_type,
             doc=str(field.help_text) if field.help_text else None,
-            required=field.required,
+            required=is_drf_field_readonly(field),
         )

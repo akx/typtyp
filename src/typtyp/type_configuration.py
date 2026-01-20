@@ -27,6 +27,10 @@ class TypeConfiguration:
     # When labels are found, the suffix to add to the enum type name for the labels type.
     enum_labels_type_suffix: str = "Labels"
 
+    # Whether to emit non-required fields (e.g. TypedDict's NotRequired, or DRF's `required=False`)
+    # as optional (e.g. `field?: type` in TypeScript).
+    non_required_fields_optional: bool = True
+
     def __post_init__(self):
         if self.import_from is not None:
             if self.field_overrides:
