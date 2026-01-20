@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from tests.common import HairColor
-from tests.helpers import check_with_tsc, typescript_from_types
+from tests.helpers import world_from_types
 
 if TYPE_CHECKING:
     import pydantic
@@ -21,7 +21,6 @@ class Person(pydantic.BaseModel):
     name: str
 
 
-def test_pydantic(snapshot):
-    code = typescript_from_types([Person, HairColor, Head])
-    assert code == snapshot
-    assert check_with_tsc(code)
+def test_pydantic(checked_ts_snapshot):
+    w = world_from_types(Person, HairColor, Head)
+    assert checked_ts_snapshot(w)

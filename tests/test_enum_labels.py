@@ -1,7 +1,7 @@
 import enum
 
 import typtyp
-from tests.helpers import check_with_tsc
+from tests.helpers import world_from_types
 from typtyp.type_configuration import TypeConfiguration
 
 
@@ -43,15 +43,11 @@ class Priority(enum.Enum):
         HIGH = "Very urgent"
 
 
-def test_enum_labels(snapshot):
-    w = typtyp.World()
-    w.add(Status)
-    code = w.get_typescript()
-    assert code == snapshot
-    assert check_with_tsc(code)
+def test_enum_labels(checked_ts_snapshot):
+    assert checked_ts_snapshot(world_from_types(Status))
 
 
-def test_enum_labels_custom_names(snapshot):
+def test_enum_labels_custom_names(checked_ts_snapshot):
     w = typtyp.World()
     w.add(
         Priority,
@@ -60,12 +56,10 @@ def test_enum_labels_custom_names(snapshot):
             enum_labels_type_suffix="Texts",
         ),
     )
-    code = w.get_typescript()
-    assert code == snapshot
-    assert check_with_tsc(code)
+    assert checked_ts_snapshot(w)
 
 
-def test_enum_labels_custom_names_dict(snapshot):
+def test_enum_labels_custom_names_dict(checked_ts_snapshot):
     w = typtyp.World()
     w.add(
         TurtleStatus,
@@ -74,6 +68,4 @@ def test_enum_labels_custom_names_dict(snapshot):
             enum_labels_type_suffix="Prose",
         ),
     )
-    code = w.get_typescript()
-    assert code == snapshot
-    assert check_with_tsc(code)
+    assert checked_ts_snapshot(w)

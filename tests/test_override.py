@@ -1,7 +1,6 @@
 from typing import TypedDict
 
 import typtyp
-from tests.helpers import check_with_tsc
 from typtyp import FieldInfo, TypeConfiguration
 
 
@@ -11,7 +10,7 @@ class Foo(TypedDict):
     skip_this: str
 
 
-def test_override(snapshot):
+def test_override(checked_ts_snapshot):
     w = typtyp.World()
     w.add(
         Foo,
@@ -23,6 +22,4 @@ def test_override(snapshot):
             },
         ),
     )
-    code = w.get_typescript()
-    assert check_with_tsc(code)
-    assert code == snapshot
+    assert checked_ts_snapshot(w)
