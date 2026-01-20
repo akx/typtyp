@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Any, ForwardRef, NamedTuple, TextIO, TypeVar
 
 from typtyp.annotations import Comment
 from typtyp.consts import COLLECTION_ORIGINS, MAPPING_ORIGINS
+from typtyp.enums import get_enum_labels, get_enum_members
 from typtyp.excs import UnreferrableTypeError
 from typtyp.field_info import FieldInfo, FieldInfoDict
 from typtyp.helpers import unique_in_order
@@ -357,10 +358,21 @@ def write_structlike(ctx: TypeScriptContext, type_info: TypeInfo, field_infos: I
 
 
 def write_enum(ctx: TypeScriptContext, type_info: TypeInfo) -> None:
-    ctx.write(f"{ctx.get_export_modifier(type_info)}const enum {type_info.name} {{\n")
-    for name, value in type_info.type.__members__.items():  # type: ignore
+    type_name = type_info.name
+    export_modifier = ctx.get_export_modifier(type_info)
+
+    ctx.write(f"{export_modifier}const enum {type_name} {{\n")
+    for name, value in get_enum_members(type_info.type):  # type: ignore
         ctx.write(f"{name} = {json.dumps(value.value)},\n")
     ctx.write("}\n")
+
+    if type_info.enum_labels_field:
+        if labels := get_enum_labels(type_info.type, type_info.enum_labels_field):
+            ctx.write(f"{export_modifier}const {type_name}{type_info.enum_labels_type_suffix}")
+            ctx.write(f": Record<{type_name}, string> = {{\n")
+            for name, label in labels.items():
+                ctx.write(f"[{type_name}.{name}]: {json.dumps(label)},\n")
+            ctx.write("}\n")
 
 
 def write_type(ctx: TypeScriptContext, type_info: TypeInfo) -> None:

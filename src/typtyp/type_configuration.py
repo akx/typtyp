@@ -18,6 +18,15 @@ class TypeConfiguration:
     # Instead of emitting this type at all, import it from the given module from the given name.
     import_from: tuple[str, str] | None = None
 
+    # For enums, the name of a field to look for that contains labels;
+    # either a subclass, or a dict.
+    # If found, a mapping of enum value -> label string will be exported.
+    # Set to None to disable label export.
+    enum_labels_field: str | None = "Labels"
+
+    # When labels are found, the suffix to add to the enum type name for the labels type.
+    enum_labels_type_suffix: str = "Labels"
+
     def __post_init__(self):
         if self.import_from is not None:
             if self.field_overrides:
