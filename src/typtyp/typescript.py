@@ -269,14 +269,17 @@ def to_ts_type(field_type: type, ts_context: TypeScriptContext) -> str:  # noqa:
 
 def get_struct_types(tp) -> list[FieldInfo] | None:
     if dataclasses.is_dataclass(tp):
-        return [FieldInfo(name=f.name, type=f.type) for f in dataclasses.fields(tp)]
+        return [FieldInfo(name=f.name, type=f.type, required=True) for f in dataclasses.fields(tp)]
 
     if typing.is_typeddict(tp):
         # TODO: support __total__
-        # TODO: support __required_keys__
-        # TODO: support __optional_keys__
         return [
-            FieldInfo(name=name, type=type) for (name, type) in typing.get_type_hints(tp, include_extras=True).items()
+            FieldInfo(
+                name=name,
+                type=type,
+                required=True,  # TODO: support __required_keys__ / __optional_keys__
+            )
+            for (name, type) in typing.get_type_hints(tp, include_extras=True).items()
         ]
 
     try:

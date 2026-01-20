@@ -18,7 +18,7 @@ def test_override(snapshot):
         configuration=TypeConfiguration(
             field_overrides={
                 "size": {"type": int | str, "doc": "Size of the foo"},
-                "color_code": FieldInfo(name="väri", type=str),
+                "color_code": FieldInfo(name="väri", type=str, required=True),
                 "skip_this": None,
             },
         ),

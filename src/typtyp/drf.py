@@ -95,4 +95,5 @@ def get_serializer_fields(ser_type: type[serializers.Serializer]) -> Iterable[Fi
             name=name,
             type=get_drf_field_type(field),
             doc=str(field.help_text) if field.help_text else None,
+            required=field.required,
         )
