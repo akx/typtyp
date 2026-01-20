@@ -2,8 +2,8 @@
 # name: test_pydantic
   '''
   export interface Person {
-  head: Head
-  name: string
+  head?: Head
+  name?: string
   }
   export const enum HairColor {
   RED = "red",
@@ -12,8 +12,8 @@
   BLUE = "blue",
   }
   export interface Head {
-  hair_color: HairColor | null
-  size: number
+  hair_color?: HairColor | null
+  size?: number
   }
   
   '''

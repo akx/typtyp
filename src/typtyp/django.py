@@ -82,4 +82,9 @@ def get_model_fields(model_type: type[models.Model]) -> Iterable[FieldInfo]:
             typ = Optional[typ]
         if comment:
             typ = Annotated[typ, Comment(comment=comment)]
-        yield FieldInfo(field.name, typ, doc=str(field.help_text) if field.help_text else None)
+        yield FieldInfo(
+            name=field.name,
+            type=typ,
+            doc=str(field.help_text) if field.help_text else None,
+            required=True,  # TODO: not implemented
+        )

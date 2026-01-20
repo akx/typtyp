@@ -269,14 +269,17 @@ def to_ts_type(field_type: type, ts_context: TypeScriptContext) -> str:  # noqa:
 
 def get_struct_types(tp) -> list[FieldInfo] | None:
     if dataclasses.is_dataclass(tp):
-        return [FieldInfo(name=f.name, type=f.type) for f in dataclasses.fields(tp)]
+        return [FieldInfo(name=f.name, type=f.type, required=True) for f in dataclasses.fields(tp)]
 
     if typing.is_typeddict(tp):
         # TODO: support __total__
-        # TODO: support __required_keys__
-        # TODO: support __optional_keys__
         return [
-            FieldInfo(name=name, type=type) for (name, type) in typing.get_type_hints(tp, include_extras=True).items()
+            FieldInfo(
+                name=name,
+                type=type,
+                required=True,  # TODO: support __required_keys__ / __optional_keys__
+            )
+            for (name, type) in typing.get_type_hints(tp, include_extras=True).items()
         ]
 
     try:
@@ -349,7 +352,7 @@ def write_structlike(ctx: TypeScriptContext, type_info: TypeInfo, field_infos: I
     for fi in merge_overrides(field_infos, type_info.field_overrides):
         ts_type = to_ts_type(fi.type, ts_context=ctx).strip()
         field_suffix = ""
-        if "| undefined" in ts_type:
+        if "| undefined" in ts_type or (type_info.non_required_fields_optional and not fi.required):
             ts_type = ts_type.replace("| undefined", "")
             field_suffix = "?"
         maybe_write_doc(ctx, fi.doc)
@@ -390,8 +393,8 @@ def write_type(ctx: TypeScriptContext, type_info: TypeInfo) -> None:
         write_enum(ctx, type_info)
         return
 
-    if (nt := get_struct_types(type_info.type)) is not None:
-        write_structlike(ctx, type_info, nt)
+    if (children := get_struct_types(type_info.type)) is not None:
+        write_structlike(ctx, type_info, children)
     else:
         ctx.write(f"{ctx.get_export_modifier(type_info)}type {type_info.name} = {to_ts_type(type_info.type, ctx)}\n")
 
