@@ -1,4 +1,5 @@
 import dataclasses
+from typing import Any, Callable
 
 from typtyp.field_info import FieldInfo, FieldInfoDict
 
@@ -14,6 +15,10 @@ class TypeConfiguration:
     # Fields not originally in the structure can be added here, and fields may likewise be removed
     # by passing in `None` as the value.
     field_overrides: dict[str, FieldInfo | FieldInfoDict | None] = dataclasses.field(default_factory=dict)
+
+    # Sort key function for ordering fields within a struct-like type.
+    # If None, fields are emitted in their original order.
+    order_fields_by: Callable[[FieldInfo], Any] | None = None
 
     # Instead of emitting this type at all, import it from the given module from the given name.
     import_from: tuple[str, str] | None = None

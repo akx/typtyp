@@ -1,0 +1,74 @@
+# serializer version: 1
+# name: test_order_fields_by[by_name]
+  '''
+  /** All you need to know about a person. */
+  export interface Person {
+  archenemy: string
+  lucky_number: number
+  zodiac_sign: string
+  }
+  
+  '''
+# ---
+# name: test_order_fields_by[default]
+  '''
+  /** All you need to know about a person. */
+  export interface Person {
+  zodiac_sign: string
+  archenemy: string
+  lucky_number: number
+  }
+  
+  '''
+# ---
+# name: test_order_fields_by_per_type
+  '''
+  /** All you need to know about a person. */
+  export interface Person {
+  zodiac_sign: string
+  archenemy: string
+  lucky_number: number
+  }
+  /** A mechanical friend. */
+  export interface Robot {
+  arm_count: number
+  model_name: string
+  zap_power: number
+  }
+  
+  '''
+# ---
+# name: test_ordering[by_name]
+  '''
+  /** Apple(count: int) */
+  export interface Apple {
+  count: number
+  }
+  /** Mango(ripe: bool) */
+  export interface Mango {
+  ripe: boolean
+  }
+  /** Zebra(name: str) */
+  export interface Zebra {
+  name: string
+  }
+  
+  '''
+# ---
+# name: test_ordering[default]
+  '''
+  /** Zebra(name: str) */
+  export interface Zebra {
+  name: string
+  }
+  /** Apple(count: int) */
+  export interface Apple {
+  count: number
+  }
+  /** Mango(ripe: bool) */
+  export interface Mango {
+  ripe: boolean
+  }
+  
+  '''
+# ---

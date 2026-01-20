@@ -24,6 +24,7 @@ from typtyp.excs import UnreferrableTypeError
 from typtyp.field_info import FieldInfo, FieldInfoDict
 from typtyp.helpers import unique_in_order
 from typtyp.type_info import TypeInfo
+from typtyp.write_options import WriteOptions
 
 if TYPE_CHECKING:
     from typtyp.world import World
@@ -38,7 +39,10 @@ class TypeAndKind(NamedTuple):
 
 
 @dataclasses.dataclass(frozen=True)
-class TypeScriptOptions:
+class TypeScriptOptions(WriteOptions):
+    # Controls which types get the `export` modifier.
+    # If True, all types are exported. If False, none are.
+    # If a set of type names, only those types are exported.
     exported_types: set[str] | bool = True
 
 
@@ -346,7 +350,11 @@ def merge_overrides(
 def write_structlike(ctx: TypeScriptContext, type_info: TypeInfo, field_infos: Iterable[FieldInfo]) -> None:
     ctx = ctx.sub(null_is_undefined=type_info.null_is_undefined)
     ctx.write(f"{ctx.get_export_modifier(type_info)}interface {type_info.name} {{\n")
-    for fi in merge_overrides(field_infos, type_info.field_overrides):
+    fields: Iterable[FieldInfo] = merge_overrides(field_infos, type_info.field_overrides)
+    order_fields_by = type_info.order_fields_by or ctx.options.order_fields_by
+    if order_fields_by is not None:
+        fields = sorted(fields, key=order_fields_by)
+    for fi in fields:
         ts_type = to_ts_type(fi.type, ts_context=ctx).strip()
         field_suffix = ""
         if "| undefined" in ts_type:
@@ -400,7 +408,10 @@ def write_ts(fp: typing.TextIO, world: World, *, options: TypeScriptOptions | No
     if options is None:
         options = TypeScriptOptions()
     ctx = TypeScriptContext(fp=fp, world=world, options=options)
-    for type_info in ctx.world:
+    type_infos: Iterable[TypeInfo] = ctx.world
+    if options.order_by is not None:
+        type_infos = sorted(type_infos, key=options.order_by)
+    for type_info in type_infos:
         write_type(ctx, type_info)
     for name, typ in sorted(ctx.required_utility_types.items()):
         write_type(ctx, TypeInfo(name=name, type=typ))
