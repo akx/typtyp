@@ -1,0 +1,46 @@
+# serializer version: 1
+# name: test_enum_labels
+  '''
+  export const enum Status {
+  PENDING = "pending",
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  }
+  export const StatusLabels: Record<Status, string> = {
+  [Status.PENDING]: "Waiting for processing",
+  [Status.ACTIVE]: "Currently active",
+  [Status.INACTIVE]: "No longer active",
+  }
+  
+  '''
+# ---
+# name: test_enum_labels_custom_names
+  '''
+  export const enum Priority {
+  LOW = 1,
+  MEDIUM = 2,
+  HIGH = 3,
+  }
+  export const PriorityTexts: Record<Priority, string> = {
+  [Priority.LOW]: "Not urgent",
+  [Priority.MEDIUM]: "Somewhat urgent",
+  [Priority.HIGH]: "Very urgent",
+  }
+  
+  '''
+# ---
+# name: test_enum_labels_custom_names_dict
+  '''
+  export const enum TurtleStatus {
+  WAITING = "waiting",
+  HOBBLING_ALONG = "hobbling_along",
+  DITHERING = "dithering",
+  }
+  export const TurtleStatusProse: Record<TurtleStatus, string> = {
+  [TurtleStatus.WAITING]: "In a state of waiting",
+  [TurtleStatus.HOBBLING_ALONG]: "Making slow progress",
+  [TurtleStatus.DITHERING]: "Unable to decide",
+  }
+  
+  '''
+# ---

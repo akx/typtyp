@@ -11,6 +11,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
+from tests.django_interop.enums import DifficultyLevel
+
 
 class PetSittingGig(models.Model):
     """
@@ -80,14 +82,11 @@ class PetSittingGig(models.Model):
     ]
     pet_species = models.CharField(max_length=20, choices=PET_SPECIES_CHOICES)
 
-    DIFFICULTY_CHOICES = [
-        ("easy", "Easy Peasy"),
-        ("moderate", "Moderate Challenge"),
-        ("hard", "Advanced Pet Wrangling"),
-        ("expert", "Call in the Professionals"),
-        ("impossible", "May God Have Mercy on My Soul"),
-    ]
-    difficulty_level = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default="easy")
+    difficulty_level = models.CharField(
+        max_length=20,
+        choices=[(dl, getattr(DifficultyLevel.Labels, dl.name)) for dl in DifficultyLevel],
+        default=DifficultyLevel.EASY,
+    )
 
     PAYMENT_STATUS_CHOICES = [
         ("pending", "Pending"),
