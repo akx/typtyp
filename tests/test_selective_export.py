@@ -1,7 +1,6 @@
 from typing import TypedDict
 
 import typtyp
-from tests.helpers import check_with_tsc
 from typtyp.typescript import TypeScriptOptions
 
 
@@ -13,9 +12,8 @@ class Bar(TypedDict):
     girth: int
 
 
-def test_selective_export(snapshot):
+def test_selective_export(checked_ts_snapshot):
     w = typtyp.World()
     w.add_many((Foo, Bar))
     code = w.get_typescript(options=TypeScriptOptions(exported_types={"Foo"}))
-    assert check_with_tsc(code)
-    assert code == snapshot
+    assert checked_ts_snapshot(code)

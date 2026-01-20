@@ -38,7 +38,6 @@ from typing import (
 from uuid import UUID
 
 import typtyp
-from tests.helpers import check_with_tsc
 
 T = TypeVar("T")
 CustomID = NewType("CustomID", str)
@@ -226,7 +225,7 @@ class KitchenSink(Generic[T], TypedDict, total=False):
     recursive_field: "KitchenSink"
 
 
-def test_kitchen_sink(snapshot):
+def test_kitchen_sink(checked_ts_snapshot):
     w = typtyp.World()
     w.add(KitchenSink)
     w.add(Address)
@@ -235,6 +234,4 @@ def test_kitchen_sink(snapshot):
     w.add(Point)
     w.add(NestedConfig)
     w.add(Person2)
-    code = w.get_typescript()
-    assert code == snapshot
-    assert check_with_tsc(code)
+    assert checked_ts_snapshot(w)

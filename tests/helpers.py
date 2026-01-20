@@ -34,7 +34,7 @@ def check_with_tsc(code, *, extra_files: dict[str, str] | None = None):
         return True
 
 
-def typescript_from_types(types) -> str:
+def world_from_types(*types) -> typtyp.World:
     w = typtyp.World()
     w.add_many(types)
-    return w.get_typescript()
+    return w
