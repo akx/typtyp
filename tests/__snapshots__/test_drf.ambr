@@ -38,7 +38,7 @@
   /** What this chaos costs */
   daily_rate: number
   days_until_start: number
-  difficulty_level: "easy" | "moderate" | "hard" | "expert" | "impossible"
+  difficulty_level: DifficultyLevel
   difficulty_level_display: string
   /** When things go sideways */
   emergency_contact_info: string
@@ -116,6 +116,20 @@
   vaccination_records_base64: string
   /** Dr. Whiskers' online presence */
   vet_website: string
+  }
+  export const enum DifficultyLevel {
+  EASY = "easy",
+  MODERATE = "moderate",
+  HARD = "hard",
+  EXPERT = "expert",
+  IMPOSSIBLE = "impossible",
+  }
+  export const DifficultyLevelLabels: Record<DifficultyLevel, string> = {
+  [DifficultyLevel.EASY]: "Easy Peasy",
+  [DifficultyLevel.MODERATE]: "Moderate Challenge",
+  [DifficultyLevel.HARD]: "Advanced Pet Wrangling",
+  [DifficultyLevel.EXPERT]: "Call in the Professionals",
+  [DifficultyLevel.IMPOSSIBLE]: "May God Have Mercy on My Soul",
   }
   export type ISO8601 = string
   export type ISO8601Date = string

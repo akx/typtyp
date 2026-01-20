@@ -9,6 +9,7 @@ from typing import Annotated, Any, Iterable, Literal, Union
 from rest_framework import fields, relations, serializers
 
 from typtyp.annotations import Comment
+from typtyp.enums import try_derive_choices_enum
 from typtyp.field_info import FieldInfo
 
 STRINGLIKE_FIELDS = (
@@ -66,7 +67,9 @@ def get_drf_field_type(field: fields.Field) -> type:
     if isinstance(field, serializers.ListSerializer):
         return list[get_drf_field_type(field.child)]
     if isinstance(field, fields.ChoiceField):
-        return Union[*(Literal[choice] for choice in field.choices)]
+        if derived_enum := try_derive_choices_enum(field.choices):
+            return derived_enum
+        return Union[*(Literal[choice] for choice in field.choices)]  # iterate over keys only
     if isinstance(field, serializers.SerializerMethodField):
         method = getattr(field.parent, field.method_name)
         rtype = inspect.get_annotations(method).get("return", Any)

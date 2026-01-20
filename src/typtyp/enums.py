@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import enum
-from typing import Iterable
+from typing import Any, Iterable
 
 
 def get_enum_members(enum_type: type) -> Iterable[tuple[str, enum.Enum]]:
@@ -29,3 +29,16 @@ def get_enum_labels(enum_type: type, member_name: str) -> dict[str, str] | None:
         if (label := labels_map.get(name)) is not None:
             ret[name] = str(label)
     return ret or None
+
+
+def try_derive_choices_enum(choices_dict: dict[Any, Any]) -> type[enum.Enum] | None:
+    """
+    Return an enum type iff `choices_dict`'s keys represent the value set of one.
+    """
+    if all(isinstance(choice, enum.Enum) for choice in choices_dict):
+        enum_types = {type(choice) for choice in choices_dict}
+        if len(enum_types) == 1:
+            enum_type = enum_types.pop()
+            if set(choices_dict) == set(enum_type):
+                return enum_type
+    return None
